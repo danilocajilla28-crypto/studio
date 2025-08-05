@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { userProfileData } from '@/lib/data';
 import { QrCode, Share2 } from 'lucide-react';
+import Link from 'next/link';
 
 export default function ProfilePage() {
   return (
@@ -15,10 +16,12 @@ export default function ProfilePage() {
       <Card className="bg-card/60 backdrop-blur-sm max-w-4xl mx-auto">
         <CardHeader className="text-center">
           <div className="relative w-32 h-32 mx-auto">
-            <Avatar className="w-32 h-32 border-4 border-primary">
-              <AvatarImage src={userProfileData.avatar} alt={userProfileData.name} data-ai-hint="profile picture" />
-              <AvatarFallback>{userProfileData.name.charAt(0)}</AvatarFallback>
-            </Avatar>
+            <Link href="/welcome">
+                <Avatar className="w-32 h-32 border-4 border-primary">
+                <AvatarImage src={userProfileData.avatar} alt={userProfileData.name} data-ai-hint="profile picture" />
+                <AvatarFallback>{userProfileData.name.charAt(0)}</AvatarFallback>
+                </Avatar>
+            </Link>
             <Button size="icon" className="absolute bottom-1 right-1 rounded-full">
                 <Share2 className="w-5 h-5" />
             </Button>
