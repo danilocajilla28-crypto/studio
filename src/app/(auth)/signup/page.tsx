@@ -38,7 +38,7 @@ export default function SignupPage() {
             <Input id="confirm-password" type="password" required />
           </div>
           <Button type="submit" className="w-full">
-            Sign Up
+            Create Account & Continue
           </Button>
         </form>
       </CardContent>
