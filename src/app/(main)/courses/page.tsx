@@ -11,8 +11,7 @@ export default function CoursesPage() {
       <PageHeader title="Courses" />
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {coursesData.map(course => (
-          <Link href={`/courses/${course.id}`} key={course.id} legacyBehavior>
-            <a className="block">
+          <Link href={`/courses/${course.id}`} key={course.id} className="block">
               <Card className="bg-card/60 backdrop-blur-sm hover:border-primary transition-colors">
                 <CardHeader>
                   <div className="flex items-center gap-4">
@@ -26,7 +25,6 @@ export default function CoursesPage() {
                   </div>
                 </CardHeader>
               </Card>
-            </a>
           </Link>
         ))}
       </div>

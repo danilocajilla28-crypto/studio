@@ -50,26 +50,26 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           <SidebarMenu>
             {navItems.map((item) => (
               <SidebarMenuItem key={item.href}>
-                <Link href={item.href} legacyBehavior passHref>
-                  <SidebarMenuButton tooltip={item.label}>
+                <SidebarMenuButton asChild tooltip={item.label}>
+                  <Link href={item.href}>
                     <item.icon />
                     <span>{item.label}</span>
-                  </SidebarMenuButton>
-                </Link>
+                  </Link>
+                </SidebarMenuButton>
               </SidebarMenuItem>
             ))}
           </SidebarMenu>
         </SidebarContent>
         <SidebarFooter>
-          <Link href="/profile" legacyBehavior passHref>
-             <SidebarMenuButton tooltip="Profile">
-                <Avatar className="w-7 h-7">
-                    <AvatarImage src="https://placehold.co/40x40.png" alt="User" />
-                    <AvatarFallback>U</AvatarFallback>
-                </Avatar>
-                <span>Profile</span>
-             </SidebarMenuButton>
-          </Link>
+           <SidebarMenuButton asChild tooltip="Profile">
+              <Link href="/profile">
+                  <Avatar className="w-7 h-7">
+                      <AvatarImage src="https://placehold.co/40x40.png" alt="User" />
+                      <AvatarFallback>U</AvatarFallback>
+                  </Avatar>
+                  <span>Profile</span>
+              </Link>
+           </SidebarMenuButton>
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>

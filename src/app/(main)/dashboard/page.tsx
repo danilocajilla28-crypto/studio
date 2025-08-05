@@ -32,11 +32,11 @@ export default function DashboardPage() {
                 <ListTodo className="w-6 h-6 text-accent" />
                 <CardTitle>Upcoming Deadlines</CardTitle>
               </div>
-              <Link href="/tasks" legacyBehavior passHref>
-                <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/tasks">
                   View All <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </CardHeader>
             <CardContent>
               <ul className="space-y-3">
@@ -62,11 +62,11 @@ export default function DashboardPage() {
                 <FileText className="w-6 h-6 text-accent" />
                 <CardTitle>Recent Files</CardTitle>
               </div>
-               <Link href="/courses" legacyBehavior passHref>
-                <Button variant="ghost" size="sm">
+               <Button variant="ghost" size="sm" asChild>
+                <Link href="/courses">
                   View All <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </CardHeader>
             <CardContent>
               <ul className="space-y-3">
@@ -90,11 +90,11 @@ export default function DashboardPage() {
                     <Calendar className="w-6 h-6 text-accent" />
                     <CardTitle>Schedule Preview</CardTitle>
                 </div>
-                 <Link href="/schedule" legacyBehavior passHref>
-                    <Button variant="ghost" size="sm">
+                 <Button variant="ghost" size="sm" asChild>
+                    <Link href="/schedule">
                         Full Schedule <ArrowRight className="w-4 h-4 ml-2" />
-                    </Button>
-                </Link>
+                    </Link>
+                </Button>
             </CardHeader>
             <CardContent>
                 <Table>
