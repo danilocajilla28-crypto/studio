@@ -45,12 +45,12 @@ export default function WelcomePage() {
                 <Label htmlFor="bio">Bio</Label>
                 <Textarea id="bio" defaultValue={userProfileData.bio} rows={3} placeholder="Tell us a little about yourself..." />
             </div>
+             <Button type="submit" className="w-full">
+                Save and Continue
+              </Button>
         </form>
       </CardContent>
       <CardFooter>
-         <Button onClick={handleSave} className="w-full">
-            Save and Continue
-          </Button>
       </CardFooter>
     </Card>
   );
