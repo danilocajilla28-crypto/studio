@@ -59,6 +59,7 @@ const prompt = ai.definePrompt({
   Provide a list of predicted deadlines for upcoming tasks, with reasons for the predictions.
   Generate personalized reminders for upcoming deadlines, tailored to the user's behavior.
   `,
+  model: 'googleai/gemini-2.0-flash'
 });
 
 const predictDeadlineFlow = ai.defineFlow(
