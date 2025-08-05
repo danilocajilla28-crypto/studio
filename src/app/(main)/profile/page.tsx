@@ -1,0 +1,51 @@
+import { PageHeader } from '@/components/page-header';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { userProfileData } from '@/lib/data';
+import { QrCode, Share2 } from 'lucide-react';
+
+export default function ProfilePage() {
+  return (
+    <div>
+      <PageHeader title="User Profile" />
+      <Card className="bg-card/60 backdrop-blur-sm max-w-4xl mx-auto">
+        <CardHeader className="text-center">
+          <div className="relative w-32 h-32 mx-auto">
+            <Avatar className="w-32 h-32 border-4 border-primary">
+              <AvatarImage src={userProfileData.avatar} alt={userProfileData.name} data-ai-hint="profile picture" />
+              <AvatarFallback>{userProfileData.name.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <Button size="icon" className="absolute bottom-1 right-1 rounded-full">
+                <Share2 className="w-5 h-5" />
+            </Button>
+          </div>
+          <CardTitle className="mt-4 text-3xl font-headline">{userProfileData.name}</CardTitle>
+          <CardDescription>ID: {userProfileData.id}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="name">Full Name</Label>
+              <Input id="name" defaultValue={userProfileData.name} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="bio">Bio</Label>
+              <Textarea id="bio" defaultValue={userProfileData.bio} rows={4} />
+            </div>
+            <div className="flex justify-between items-center pt-4">
+               <Button variant="outline">
+                  <QrCode className="mr-2"/>
+                  Share Profile
+                </Button>
+               <Button type="submit">Save Changes</Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
