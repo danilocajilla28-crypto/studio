@@ -174,7 +174,13 @@ export default function CourseDetailPage({ params }: { params: { courseId: strin
                 <TableRow key={file.id}>
                   <TableCell className="font-medium flex items-center gap-2">
                     {getFileIcon(file.type)}
-                    {file.name}
+                    {file.type === 'Link' ? (
+                      <a href={file.url} target="_blank" rel="noopener noreferrer" className="hover:underline text-primary">
+                        {file.name}
+                      </a>
+                    ) : (
+                      <span>{file.name}</span>
+                    )}
                   </TableCell>
                   <TableCell>{file.type}</TableCell>
                   <TableCell>{file.dateAdded}</TableCell>
