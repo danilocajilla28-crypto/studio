@@ -1,4 +1,4 @@
-import type { Course, Task, Schedule, File, Message, UserProfile } from '@/lib/types';
+import type { Course, Task, ScheduleData, File, Message, UserProfile } from '@/lib/types';
 
 export const userProfileData: UserProfile = {
   name: 'Alex Doe',
@@ -8,11 +8,26 @@ export const userProfileData: UserProfile = {
 };
 
 export const coursesData: Course[] = [
-  { id: 'cs101', name: 'Introduction to Programming', color: 'bg-blue-600' },
-  { id: 'ds202', name: 'Data Structures & Algorithms', color: 'bg-green-600' },
-  { id: 'ai301', name: 'Artificial Intelligence', color: 'bg-purple-600' },
-  { id: 'se404', name: 'Software Engineering', color: 'bg-red-600' },
-  { id: 'scied3a', name: 'SCIED 3A', color: 'bg-yellow-500' },
+  { id: 'cs101', name: 'Introduction to Programming', instructor: 'Dr. Alan Turing', schedule: [
+    { day: 'Monday', startTime: '08:00', endTime: '09:30'},
+    { day: 'Wednesday', startTime: '08:00', endTime: '09:30'}
+  ], color: 'bg-blue-600' },
+  { id: 'ds202', name: 'Data Structures & Algorithms', instructor: 'Dr. Grace Hopper', schedule: [
+    { day: 'Monday', startTime: '10:00', endTime: '11:30'},
+    { day: 'Friday', startTime: '08:00', endTime: '09:30'}
+  ], color: 'bg-green-600' },
+  { id: 'ai301', name: 'Artificial Intelligence', instructor: 'Dr. Geoffrey Hinton', schedule: [
+    { day: 'Tuesday', startTime: '10:00', endTime: '11:30'},
+    { day: 'Thursday', startTime: '10:00', endTime: '11:30'}
+  ], color: 'bg-purple-600' },
+  { id: 'se404', name: 'Software Engineering', instructor: 'Dr. Linus Torvalds', schedule: [
+    { day: 'Tuesday', startTime: '13:00', endTime: '14:30'},
+    { day: 'Thursday', startTime: '13:00', endTime: '14:30'}
+  ], color: 'bg-red-600' },
+  { id: 'scied3a', name: 'SCIED 3A', instructor: 'Dr. Marie Curie', schedule: [
+    { day: 'Wednesday', startTime: '13:00', endTime: '14:30'},
+    { day: 'Friday', startTime: '13:00', endTime: '14:30'}
+  ], color: 'bg-yellow-500' },
 ];
 
 export const tasksData: Task[] = [
@@ -23,12 +38,15 @@ export const tasksData: Task[] = [
   { id: 't5', courseId: 'scied3a', title: 'Mid-term Exam', type: 'Exam', assignedDate: '2024-06-10', deadline: '2024-06-17', priority: 'High', status: 'Not Started' },
 ];
 
-export const scheduleData: Schedule = {
+// This mock data is less relevant now as schedule is tied to courses.
+// Keeping it for potential use in dashboard preview, but will need adjustment.
+export const scheduleData: ScheduleData = {
   '8:00 AM - 9:30 AM': { Monday: { courseId: 'cs101', name: 'Intro to Prog' }, Tuesday: null, Wednesday: { courseId: 'cs101', name: 'Intro to Prog' }, Thursday: null, Friday: { courseId: 'ds202', name: 'Data Structures' } },
   '10:00 AM - 11:30 AM': { Monday: { courseId: 'ds202', name: 'Data Structures' }, Tuesday: { courseId: 'ai301', name: 'AI' }, Wednesday: null, Thursday: { courseId: 'ai301', name: 'AI' }, Friday: null },
   '1:00 PM - 2:30 PM': { Monday: null, Tuesday: { courseId: 'se404', name: 'Software Eng.' }, Wednesday: { courseId: 'scied3a', name: 'SCIED 3A' }, Thursday: { courseId: 'se404', name: 'Software Eng.' }, Friday: { courseId: 'scied3a', name: 'SCIED 3A' } },
   '3:00 PM - 4:30 PM': { Monday: null, Tuesday: null, Wednesday: null, Thursday: null, Friday: null },
 };
+
 
 export const filesData: { [courseId: string]: File[] } = {
   cs101: [

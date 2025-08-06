@@ -1,20 +1,40 @@
+
 'use client';
 import Link from 'next/link';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ListTodo, Calendar, FileText, ArrowRight } from 'lucide-react';
-import { tasksData, scheduleData, filesData } from '@/lib/data';
+import { tasksData, filesData } from '@/lib/data';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useUserData } from '@/hooks/use-user-data';
+import React from 'react';
+
+const timeToMinutes = (time: string) => {
+  const [hour, minute] = time.split(':').map(Number);
+  return hour * 60 + minute;
+};
+
 
 export default function DashboardPage() {
   const { userProfile, courses } = useUserData();
   const upcomingTasks = tasksData.filter(t => t.status !== 'Completed').slice(0, 3);
   const recentFiles = Object.values(filesData).flat().slice(0, 3);
-  const scheduleTimeSlots = Object.keys(scheduleData).slice(0, 2);
+  
+  // Create a simplified schedule for the dashboard preview
+  const schedulePreview = courses.flatMap(course => 
+    course.schedule.map(entry => ({
+      courseId: course.id,
+      name: course.name,
+      day: entry.day,
+      startTime: entry.startTime
+    }))
+  ).filter(item => ['Monday', 'Tuesday', 'Wednesday'].includes(item.day))
+   .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime))
+   .slice(0, 2);
+
 
   return (
     <div>
@@ -109,28 +129,29 @@ export default function DashboardPage() {
                     <TableHeader>
                         <TableRow>
                             <TableHead className="w-[150px]">Time</TableHead>
-                            <TableHead>Monday</TableHead>
-                            <TableHead>Tuesday</TableHead>
-                            <TableHead>Wednesday</TableHead>
-                            <TableHead>Thursday</TableHead>
-                            <TableHead>Friday</TableHead>
+                            <TableHead>Course</TableHead>
+                            <TableHead>Day</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {scheduleTimeSlots.map((time) => (
-                            <TableRow key={time}>
-                                <TableCell className="font-medium">{time}</TableCell>
-                                {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map(day => (
-                                    <TableCell key={day}>
-                                        {scheduleData[time][day] ? (
-                                        <div className={cn("p-2 rounded-md text-center text-sm", courses.find(c => c.id === scheduleData[time][day]!.courseId)?.color)}>
-                                            <p className="font-semibold text-foreground">{scheduleData[time][day]!.name}</p>
-                                        </div>
-                                        ) : null}
-                                    </TableCell>
-                                ))}
-                            </TableRow>
+                        {schedulePreview.map((item, index) => (
+                           <TableRow key={index}>
+                                <TableCell className="font-medium">{item.startTime}</TableCell>
+                                <TableCell>
+                                     <div className={cn("p-2 rounded-md text-center text-sm", courses.find(c => c.id === item.courseId)?.color)}>
+                                            <p className="font-semibold text-foreground">{item.name}</p>
+                                    </div>
+                                </TableCell>
+                                <TableCell>{item.day}</TableCell>
+                           </TableRow>
                         ))}
+                         {schedulePreview.length === 0 && (
+                            <TableRow>
+                                <TableCell colSpan={3} className="text-center h-24 text-muted-foreground">
+                                    No classes scheduled for the next few days.
+                                </TableCell>
+                            </TableRow>
+                        )}
                     </TableBody>
                 </Table>
             </CardContent>

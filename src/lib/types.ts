@@ -5,9 +5,17 @@ export interface UserProfile {
   avatar: string;
 }
 
+export interface ScheduleEntry {
+  day: string;
+  startTime: string;
+  endTime: string;
+}
+
 export interface Course {
   id: string;
   name: string;
+  instructor: string;
+  schedule: ScheduleEntry[];
   color: string;
 }
 
@@ -22,7 +30,7 @@ export interface Task {
   status: 'Completed' | 'In Progress' | 'Not Started';
 }
 
-export type Schedule = {
+export type ScheduleData = {
   [time: string]: {
     [day: string]: {
       courseId: string;
