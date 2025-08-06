@@ -101,7 +101,7 @@ export default function ScannerPage() {
       canvas.height = video.videoHeight;
       const context = canvas.getContext('2d');
       context?.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-      const dataUrl = canvas.toDataURL('image/png');
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.95); // Use high-quality JPEG
       setCapturedImages([...capturedImages, dataUrl]);
     }
   };
@@ -119,7 +119,10 @@ export default function ScannerPage() {
       return;
     }
     
-    const doc = new jsPDF();
+    // Using 'p' for portrait orientation
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const pdfWidth = doc.internal.pageSize.getWidth();
+    const pdfHeight = doc.internal.pageSize.getHeight();
     
     for (let i = 0; i < capturedImages.length; i++) {
         const imgData = capturedImages[i];
@@ -128,20 +131,30 @@ export default function ScannerPage() {
         await new Promise(resolve => img.onload = resolve);
 
         const imgProps = doc.getImageProperties(imgData);
-        const pdfWidth = doc.internal.pageSize.getWidth();
-        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        const imgAspectRatio = imgProps.width / imgProps.height;
+        const pdfAspectRatio = pdfWidth / pdfHeight;
+
+        let finalImgWidth = pdfWidth;
+        let finalImgHeight = pdfHeight;
+        
+        if (imgAspectRatio > pdfAspectRatio) {
+            finalImgHeight = pdfWidth / imgAspectRatio;
+        } else {
+            finalImgWidth = pdfHeight * imgAspectRatio;
+        }
+
+        const x = (pdfWidth - finalImgWidth) / 2;
+        const y = (pdfHeight - finalImgHeight) / 2;
 
         if (i > 0) {
             doc.addPage();
         }
-        doc.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        doc.addImage(imgData, 'JPEG', x, y, finalImgWidth, finalImgHeight);
     }
     
     const pdfDataUri = doc.output('datauristring');
     setFileName(`scan-bundle-${new Date().toISOString().split('T')[0]}.pdf`);
     
-    // This is a bit of a hack to pass the data to the save dialog
-    // In a real app, you might use state management like Redux/Zustand
     (window as any).generatedPdfData = pdfDataUri;
     setIsSaveDialogOpen(true);
   }
@@ -163,7 +176,6 @@ export default function ScannerPage() {
     addFile(selectedCourseId, newFile);
     toast({ title: 'Success', description: 'PDF saved to your course repository.' });
     
-    // Reset state
     setCapturedImages([]);
     setFileName('');
     setSelectedCourseId('');
