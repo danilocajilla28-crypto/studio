@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -6,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/ca
 import { useUserData } from '@/hooks/use-user-data';
 import { cn } from '@/lib/utils';
 import { FolderKanban } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function CoursesPage() {
   const { courses } = useUserData();
