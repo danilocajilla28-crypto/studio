@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { GoogleIcon } from '@/components/ui/google-icon';
+import { signInWithGoogle } from '@/lib/firebase/auth';
 
 export default function SignupPage() {
     const router = useRouter();
@@ -16,6 +17,19 @@ export default function SignupPage() {
         // In a real app, you'd have signup logic here.
         // For now, we'll just navigate to the welcome page.
         router.push('/welcome');
+    };
+
+    const handleGoogleSignIn = async () => {
+        const { user, error } = await signInWithGoogle();
+        if (user) {
+            // New users are directed to the welcome page to complete their profile.
+            // A real app would check if this is a genuinely new user vs. an existing one.
+            router.push('/welcome');
+        }
+        if (error) {
+            // You can show a toast notification here
+            console.error(error);
+        }
     };
 
   return (
@@ -52,7 +66,7 @@ export default function SignupPage() {
             <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
           </div>
         </div>
-        <Button variant="outline" className="w-full">
+        <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}>
             <GoogleIcon className="mr-2 h-4 w-4" />
             Continue with Google
         </Button>
