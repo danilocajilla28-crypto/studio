@@ -7,10 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Plus, Trash2, Upload } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
+import { Plus, Trash2 } from 'lucide-react';
 import { useUserData } from '@/hooks/use-user-data';
 import type { Course, ScheduleEntry } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -23,29 +20,14 @@ const timeSlots = Array.from({ length: 15 }, (_, i) => `${Math.floor(i / 2) + 7}
 
 export default function WelcomePage() {
     const router = useRouter();
-    const { userProfile, courses: appCourses, setUserProfile, setCourses: setAppCourses, isLoading } = useUserData();
+    const { courses: appCourses, setCourses: setAppCourses, isLoading, userProfile } = useUserData();
     
-    const [name, setName] = useState('');
-    const [studentId, setStudentId] = useState('');
-    const [bio, setBio] = useState('');
-    const [avatar, setAvatar] = useState('https://placehold.co/100x100.png');
-    const fileInputRef = useRef<HTMLInputElement>(null);
-    const [showProfileSetup, setShowProfileSetup] = useState(true);
-
     const [courses, setCourses] = useState<CourseInput[]>([
         { inputId: `course-${Date.now()}`, name: '', instructor: '', schedule: [{ day: 'Monday', startTime: '09:00', endTime: '10:00'}], color: courseColors[0] }
     ]);
     
     useEffect(() => {
         if (!isLoading) {
-            if (userProfile.name) {
-                setName(userProfile.name);
-                setStudentId(userProfile.id);
-                setBio(userProfile.bio);
-                setAvatar(userProfile.avatar);
-                setShowProfileSetup(false);
-            }
-
             if (appCourses.length > 0) {
                 setCourses(appCourses.map((c, i) => ({
                     ...c,
@@ -53,19 +35,8 @@ export default function WelcomePage() {
                 })));
             }
         }
-    }, [isLoading, userProfile, appCourses]);
+    }, [isLoading, appCourses]);
 
-
-    const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0];
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setAvatar(reader.result as string);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
 
     const handleCourseChange = (inputId: string, field: keyof Omit<CourseInput, 'inputId' | 'color' | 'schedule'>, value: string) => {
         setCourses(courses.map(course => 
@@ -114,13 +85,6 @@ export default function WelcomePage() {
     const handleSave = (e: React.FormEvent) => {
         e.preventDefault();
         
-        setUserProfile({
-            name,
-            id: studentId,
-            bio,
-            avatar: avatar,
-        });
-
         const formattedCourses: Course[] = courses
             .filter(c => c.name.trim() !== '')
             .map((c, i) => ({
@@ -138,42 +102,11 @@ export default function WelcomePage() {
   return (
     <Card className="w-full max-w-3xl bg-card/60 backdrop-blur-sm">
       <CardHeader className="text-center">
-        <CardTitle className="text-3xl">Welcome to CourseCompass!</CardTitle>
-        <CardDescription>Let&apos;s set up your profile and schedule.</CardDescription>
+        <CardTitle className="text-3xl">Welcome, {userProfile.name}!</CardTitle>
+        <CardDescription>Let&apos;s set up your course schedule.</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSave} className="space-y-8">
-            {showProfileSetup && (
-                <div className="space-y-6">
-                     <div className="flex flex-col items-center gap-4">
-                        <Avatar className="w-24 h-24 border-4 border-primary">
-                            <AvatarImage src={avatar} alt={name} />
-                            <AvatarFallback>{name ? name.charAt(0) : 'U'}</AvatarFallback>
-                        </Avatar>
-                        <input type="file" accept="image/*" ref={fileInputRef} onChange={handleAvatarUpload} className="hidden" />
-                        <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
-                            <Upload className="mr-2 h-4 w-4" /> Upload Photo
-                        </Button>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="name">Full Name</Label>
-                            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g., Alex Doe" required />
-                        </div>
-                         <div className="space-y-2">
-                            <Label htmlFor="student-id">Student ID</Label>
-                            <Input id="student-id" value={studentId} onChange={(e) => setStudentId(e.target.value)} placeholder="e.g., 2024-01234" />
-                        </div>
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="bio">Bio</Label>
-                        <Textarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} rows={3} placeholder="Tell us a little about yourself..." />
-                    </div>
-                </div>
-            )}
-
-            {showProfileSetup && <Separator />}
-
             <div className="space-y-6">
                 <div>
                     <h3 className="text-lg font-medium">Your Courses</h3>
@@ -229,16 +162,13 @@ export default function WelcomePage() {
             </div>
             
              <Button type="submit" size="lg" className="w-full">
-                {showProfileSetup ? 'Save and Continue to Dashboard' : 'Save Changes'}
+                Save Courses and Go to Dashboard
               </Button>
         </form>
       </CardContent>
       <CardFooter>
+         <Button variant="link" onClick={() => router.push('/dashboard')}>Skip for now</Button>
       </CardFooter>
     </Card>
   );
 }
-
-    
-
-    
