@@ -58,20 +58,19 @@ export default function SignupPage() {
     const handleGoogleSignIn = async () => {
         const { user, error } = await signInWithGoogle();
         if (user) {
-            // If signing up with Google, we might not have all profile info yet.
-            // Still go to welcome page. We could pre-fill name/avatar from Google profile.
              const googleName = user.displayName || '';
              const googleAvatar = user.photoURL || 'https://placehold.co/100x100.png';
 
              setUserProfile({
                 name: googleName,
                 avatar: googleAvatar,
-                id: '', // Student ID needs to be filled manually
-                bio: '', // Bio needs to be filled manually
+                id: '', // Student ID can be added later in profile
+                bio: '', // Bio can be added later in profile
             });
 
-            // Navigate to the welcome page to confirm details and add courses.
-            router.push('/welcome');
+            // For Google sign-in, the experience is smoother if we take them
+            // directly to the dashboard. They can add courses from there.
+            router.push('/dashboard');
         }
         if (error) {
             // You can show a toast notification here
