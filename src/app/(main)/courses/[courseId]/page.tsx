@@ -1,23 +1,23 @@
+
 'use client';
 
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { filesData } from '@/lib/data';
 import { notFound } from 'next/navigation';
-import { Upload, Eye, Download, MoreHorizontal, FileText } from 'lucide-react';
+import { Upload, Eye, Download, MoreHorizontal, FileText, Trash2 } from 'lucide-react';
 import { useUserData } from '@/hooks/use-user-data';
+import type { File as FileType } from '@/lib/types';
+import { useRef } from 'react';
 
 export default function CourseDetailPage({ params }: { params: { courseId: string } }) {
-  const { courses } = useUserData();
+  const { courses, files, addFile, removeFile } = useUserData();
   const course = courses.find(c => c.id === params.courseId);
-  const files = filesData[params.courseId] || [];
+  const courseFiles = files[params.courseId] || [];
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!course) {
-    // We can show a loading state while user data is being loaded
-    // For now, we'll just handle the case where the course is not found after loading
-    // A better approach for production would be to fetch this data from a server and show a loading skeleton
     return (
        <div>
          <PageHeader title="Loading..." />
@@ -30,10 +30,42 @@ export default function CourseDetailPage({ params }: { params: { courseId: strin
     );
   }
 
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const fileData: FileType = {
+        id: `${params.courseId}-${Date.now()}`,
+        name: file.name,
+        type: file.type,
+        dateAdded: new Date().toLocaleDateString(),
+        url: e.target?.result as string,
+      };
+      addFile(params.courseId, fileData);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const openFile = (url: string) => {
+    window.open(url, '_blank');
+  }
+
   return (
     <div>
       <PageHeader title={course.name} action={
-        <Button><Upload className="mr-2" />Upload File</Button>
+        <>
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleFileUpload} 
+            className="hidden" 
+          />
+          <Button onClick={() => fileInputRef.current?.click()}>
+            <Upload className="mr-2" />Upload File
+          </Button>
+        </>
       } />
       <Card className="bg-card/60 backdrop-blur-sm">
         <CardHeader>
@@ -51,7 +83,7 @@ export default function CourseDetailPage({ params }: { params: { courseId: strin
               </TableRow>
             </TableHeader>
             <TableBody>
-              {files.map(file => (
+              {courseFiles.map(file => (
                 <TableRow key={file.id}>
                   <TableCell className="font-medium flex items-center gap-2">
                     <FileText className="w-5 h-5 text-muted-foreground" />
@@ -60,13 +92,13 @@ export default function CourseDetailPage({ params }: { params: { courseId: strin
                   <TableCell>{file.type}</TableCell>
                   <TableCell>{file.dateAdded}</TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon"><Eye className="w-4 h-4" /></Button>
+                    <Button variant="ghost" size="icon" onClick={() => openFile(file.url)}><Eye className="w-4 h-4" /></Button>
                     <Button variant="ghost" size="icon"><Download className="w-4 h-4" /></Button>
-                    <Button variant="ghost" size="icon"><MoreHorizontal className="w-4 h-4" /></Button>
+                    <Button variant="ghost" size="icon" onClick={() => removeFile(params.courseId, file.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
                   </TableCell>
                 </TableRow>
               ))}
-               {files.length === 0 && (
+               {courseFiles.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center h-24 text-muted-foreground">
                     No files uploaded yet.

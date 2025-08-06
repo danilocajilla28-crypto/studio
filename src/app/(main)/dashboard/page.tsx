@@ -5,7 +5,7 @@ import { PageHeader } from '@/components/page-header';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ListTodo, Calendar, FileText, ArrowRight } from 'lucide-react';
-import { tasksData, filesData } from '@/lib/data';
+import { tasksData } from '@/lib/data';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -19,9 +19,9 @@ const timeToMinutes = (time: string) => {
 
 
 export default function DashboardPage() {
-  const { userProfile, courses } = useUserData();
+  const { userProfile, courses, files } = useUserData();
   const upcomingTasks = tasksData.filter(t => t.status !== 'Completed').slice(0, 3);
-  const recentFiles = Object.values(filesData).flat().slice(0, 3);
+  const recentFiles = Object.values(files).flat().slice(0, 3);
   
   // Create a simplified schedule for the dashboard preview
   const schedulePreview = courses.flatMap(course => 
