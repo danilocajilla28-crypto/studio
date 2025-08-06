@@ -9,13 +9,17 @@ import { notFound } from 'next/navigation';
 import { Upload, Eye, Download, MoreHorizontal, FileText, Trash2 } from 'lucide-react';
 import { useUserData } from '@/hooks/use-user-data';
 import type { File as FileType } from '@/lib/types';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import Image from 'next/image';
 
 export default function CourseDetailPage({ params }: { params: { courseId: string } }) {
   const { courses, files, addFile, removeFile } = useUserData();
   const course = courses.find(c => c.id === params.courseId);
   const courseFiles = files[params.courseId] || [];
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [viewingFile, setViewingFile] = useState<FileType | null>(null);
 
   if (!course) {
     return (
@@ -48,8 +52,17 @@ export default function CourseDetailPage({ params }: { params: { courseId: strin
     reader.readAsDataURL(file);
   };
 
-  const openFile = (url: string) => {
-    window.open(url, '_blank');
+  const openFile = (file: FileType) => {
+    setViewingFile(file);
+  }
+
+  const downloadFile = (file: FileType) => {
+    const link = document.createElement('a');
+    link.href = file.url;
+    link.download = file.name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 
   return (
@@ -92,8 +105,8 @@ export default function CourseDetailPage({ params }: { params: { courseId: strin
                   <TableCell>{file.type}</TableCell>
                   <TableCell>{file.dateAdded}</TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => openFile(file.url)}><Eye className="w-4 h-4" /></Button>
-                    <Button variant="ghost" size="icon"><Download className="w-4 h-4" /></Button>
+                    <Button variant="ghost" size="icon" onClick={() => openFile(file)}><Eye className="w-4 h-4" /></Button>
+                    <Button variant="ghost" size="icon" onClick={() => downloadFile(file)}><Download className="w-4 h-4" /></Button>
                     <Button variant="ghost" size="icon" onClick={() => removeFile(params.courseId, file.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
                   </TableCell>
                 </TableRow>
@@ -109,6 +122,35 @@ export default function CourseDetailPage({ params }: { params: { courseId: strin
           </Table>
         </CardContent>
       </Card>
+
+      {viewingFile && (
+        <Dialog open={!!viewingFile} onOpenChange={(isOpen) => !isOpen && setViewingFile(null)}>
+          <DialogContent className="max-w-4xl h-[90vh] flex flex-col bg-background/80 backdrop-blur-sm">
+            <DialogHeader>
+              <DialogTitle>{viewingFile.name}</DialogTitle>
+              <DialogDescription>{viewingFile.type} - {viewingFile.dateAdded}</DialogDescription>
+            </DialogHeader>
+            <div className="flex-1 overflow-auto rounded-md border">
+              {viewingFile.type.startsWith('image/') ? (
+                <div className="relative w-full h-full">
+                   <Image src={viewingFile.url} alt={viewingFile.name} layout="fill" objectFit="contain" />
+                </div>
+              ) : viewingFile.type === 'application/pdf' ? (
+                <iframe src={viewingFile.url} className="w-full h-full" title={viewingFile.name} />
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full text-center p-8">
+                  <FileText className="w-24 h-24 text-muted-foreground mb-4" />
+                  <h3 className="text-xl font-semibold">Preview not available</h3>
+                  <p className="text-muted-foreground">This file type cannot be previewed directly in the browser.</p>
+                  <Button onClick={() => downloadFile(viewingFile)} className="mt-6">
+                    <Download className="mr-2" /> Download File
+                  </Button>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
