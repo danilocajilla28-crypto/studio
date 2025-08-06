@@ -39,21 +39,25 @@ export default function AiPredictionsPage() {
   useEffect(() => {
     if (!isUserDataLoading) {
       // Format course schedule
-      const scheduleString = courses.map(course => 
-        `${course.name}: ${course.schedule.map(s => `${s.day} ${s.startTime}-${s.endTime}`).join(', ')}`
-      ).join('\n');
+      const scheduleString = courses.length > 0 
+        ? courses.map(course => 
+            `${course.name}: ${course.schedule.map(s => `${s.day} ${s.startTime}-${s.endTime}`).join(', ')}`
+          ).join('\n')
+        : 'No courses added yet. Please add courses in your profile.';
 
       // Format task list
-      const taskString = tasks.map(task => {
-        const courseName = courses.find(c => c.id === task.courseId)?.name || 'Unknown Course';
-        return `${task.title} (${task.type}) for ${courseName}, Assigned: ${task.assignedDate}, Deadline: ${task.deadline}, Priority: ${task.priority}, Status: ${task.status}`;
-      }).join('\n');
+      const taskString = tasks.length > 0 
+        ? tasks.map(task => {
+            const courseName = courses.find(c => c.id === task.courseId)?.name || 'Unknown Course';
+            return `${task.title} (${task.type}) for ${courseName}, Assigned: ${task.assignedDate}, Deadline: ${task.deadline}, Priority: ${task.priority}, Status: ${task.status}`;
+          }).join('\n')
+        : 'No tasks added yet. Please add tasks in the tasks page.';
       
-      const behaviorString = userProfile.bio || 'Not specified.';
+      const behaviorString = userProfile.bio || 'User has not specified any habits or bio.';
 
       form.reset({
-        courseSchedule: scheduleString || 'No courses added yet. Please add courses in your profile.',
-        taskList: taskString || 'No tasks added yet. Please add tasks in the tasks page.',
+        courseSchedule: scheduleString,
+        taskList: taskString,
         userBehavior: behaviorString,
       });
     }
