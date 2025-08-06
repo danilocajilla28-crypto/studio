@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -9,29 +10,54 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
-import { predictDeadline, PredictDeadlineInput, PredictDeadlineOutput } from '@/ai/flows/smart-deadline-prediction';
+import { predictDeadline, PredictDeadlineOutput } from '@/ai/flows/smart-deadline-prediction';
 import { Loader2, Sparkles, AlertTriangle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useUserData } from '@/hooks/use-user-data';
 
 const formSchema = z.object({
-  courseSchedule: z.string().min(10, { message: 'Please provide more details about your schedule.' }),
-  taskList: z.string().min(10, { message: 'Please provide more details about your tasks.' }),
-  userBehavior: z.string().min(10, { message: 'Please provide more details about your habits.' }),
+  courseSchedule: z.string().min(1, { message: 'Please provide your schedule.' }),
+  taskList: z.string().min(1, { message: 'Please provide your tasks.' }),
+  userBehavior: z.string().min(1, { message: 'Please provide your habits.' }),
 });
 
 export default function AiPredictionsPage() {
   const [prediction, setPrediction] = useState<PredictDeadlineOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { courses, tasks, userProfile, isLoading: isUserDataLoading } = useUserData();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      courseSchedule: 'SCIED 3A: W/F 1:00 PM - 2:30 PM\nIntro to Prog: M/W 8:00 AM - 9:30 AM',
-      taskList: 'Final Project Proposal (Assignment), Assigned: May 20, Type: Assignment\nLab 5 (Performance Task), Assigned: May 28',
-      userBehavior: 'Tends to complete assignments 2-3 days before the deadline. Prefers studying in the evening.',
+      courseSchedule: '',
+      taskList: '',
+      userBehavior: '',
     },
   });
+
+  useEffect(() => {
+    if (!isUserDataLoading) {
+      // Format course schedule
+      const scheduleString = courses.map(course => 
+        `${course.name}: ${course.schedule.map(s => `${s.day} ${s.startTime}-${s.endTime}`).join(', ')}`
+      ).join('\n');
+
+      // Format task list
+      const taskString = tasks.map(task => {
+        const courseName = courses.find(c => c.id === task.courseId)?.name || 'Unknown Course';
+        return `${task.title} (${task.type}) for ${courseName}, Assigned: ${task.assignedDate}, Deadline: ${task.deadline}, Priority: ${task.priority}, Status: ${task.status}`;
+      }).join('\n');
+      
+      const behaviorString = userProfile.bio || 'Not specified.';
+
+      form.reset({
+        courseSchedule: scheduleString || 'No courses added yet. Please add courses in your profile.',
+        taskList: taskString || 'No tasks added yet. Please add tasks in the tasks page.',
+        userBehavior: behaviorString,
+      });
+    }
+  }, [isUserDataLoading, courses, tasks, userProfile, form]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
@@ -56,7 +82,7 @@ export default function AiPredictionsPage() {
           <CardHeader>
             <CardTitle>Analyze Your Workload</CardTitle>
             <CardDescription>
-              Provide your schedule, tasks, and habits. Our AI will predict deadlines and create personalized reminders.
+              Your current schedule, tasks, and habits are loaded below. Our AI will predict deadlines and create personalized reminders.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -69,7 +95,7 @@ export default function AiPredictionsPage() {
                     <FormItem>
                       <FormLabel>Course Schedule</FormLabel>
                       <FormControl>
-                        <Textarea placeholder="Enter your class schedule..." {...field} rows={4} />
+                        <Textarea placeholder="Enter your class schedule..." {...field} rows={4} disabled={isUserDataLoading} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -82,7 +108,7 @@ export default function AiPredictionsPage() {
                     <FormItem>
                       <FormLabel>Current Task List</FormLabel>
                       <FormControl>
-                        <Textarea placeholder="List your current assignments, projects, etc." {...field} rows={4} />
+                        <Textarea placeholder="List your current assignments, projects, etc." {...field} rows={4} disabled={isUserDataLoading} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -93,15 +119,15 @@ export default function AiPredictionsPage() {
                   name="userBehavior"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Your Habits</FormLabel>
+                      <FormLabel>Your Habits & Bio</FormLabel>
                       <FormControl>
-                        <Textarea placeholder="Describe your study habits, e.g., when you prefer to work." {...field} rows={4} />
+                        <Textarea placeholder="Describe your study habits, e.g., when you prefer to work." {...field} rows={4} disabled={isUserDataLoading}/>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <Button type="submit" disabled={isLoading} className="w-full">
+                <Button type="submit" disabled={isLoading || isUserDataLoading} className="w-full">
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
