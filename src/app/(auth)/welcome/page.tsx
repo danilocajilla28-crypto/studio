@@ -1,16 +1,15 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { userProfileData as defaultUserProfileData } from '@/lib/data';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Upload } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { useUserData } from '@/hooks/use-user-data';
 import type { Course, ScheduleEntry } from '@/lib/types';
@@ -26,13 +25,26 @@ export default function WelcomePage() {
     const router = useRouter();
     const { setUserProfile, setCourses: setAppCourses } = useUserData();
     
-    const [name, setName] = useState(defaultUserProfileData.name);
-    const [studentId, setStudentId] = useState(defaultUserProfileData.id);
-    const [bio, setBio] = useState(defaultUserProfileData.bio);
+    const [name, setName] = useState('');
+    const [studentId, setStudentId] = useState('');
+    const [bio, setBio] = useState('');
+    const [avatar, setAvatar] = useState('https://placehold.co/100x100.png');
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [courses, setCourses] = useState<CourseInput[]>([
-        { inputId: `course-${Date.now()}`, name: '', instructor: '', schedule: [{ day: 'Monday', startTime: '09:00 AM', endTime: '10:00 AM'}], color: courseColors[0] }
+        { inputId: `course-${Date.now()}`, name: '', instructor: '', schedule: [{ day: 'Monday', startTime: '09:00', endTime: '10:00'}], color: courseColors[0] }
     ]);
+
+    const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setAvatar(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     const handleCourseChange = (inputId: string, field: keyof Omit<CourseInput, 'inputId' | 'color' | 'schedule'>, value: string) => {
         setCourses(courses.map(course => 
@@ -54,7 +66,7 @@ export default function WelcomePage() {
     const addScheduleEntry = (courseId: string) => {
         setCourses(courses.map(course => {
             if (course.inputId === courseId) {
-                return { ...course, schedule: [...course.schedule, { day: 'Monday', startTime: '09:00 AM', endTime: '10:00 AM' }] };
+                return { ...course, schedule: [...course.schedule, { day: 'Monday', startTime: '09:00', endTime: '10:00' }] };
             }
             return course;
         }));
@@ -71,7 +83,7 @@ export default function WelcomePage() {
     };
 
     const addCourse = () => {
-        setCourses([...courses, { inputId: `course-${Date.now()}`, name: '', instructor: '', schedule: [{ day: 'Monday', startTime: '09:00 AM', endTime: '10:00 AM'}], color: courseColors[courses.length % courseColors.length] }]);
+        setCourses([...courses, { inputId: `course-${Date.now()}`, name: '', instructor: '', schedule: [{ day: 'Monday', startTime: '09:00', endTime: '10:00'}], color: courseColors[courses.length % courseColors.length] }]);
     };
 
     const removeCourse = (id: string) => {
@@ -85,7 +97,7 @@ export default function WelcomePage() {
             name,
             id: studentId,
             bio,
-            avatar: defaultUserProfileData.avatar
+            avatar: avatar,
         });
 
         const formattedCourses: Course[] = courses
@@ -95,7 +107,7 @@ export default function WelcomePage() {
                 name: c.name,
                 instructor: c.instructor,
                 color: c.color,
-                schedule: c.schedule,
+                schedule: c.schedule.map(s => ({...s, startTime: s.startTime || '09:00', endTime: s.endTime || '10:00'})),
             }));
 
         setAppCourses(formattedCourses);
@@ -111,16 +123,20 @@ export default function WelcomePage() {
       <CardContent>
         <form onSubmit={handleSave} className="space-y-8">
             <div className="space-y-6">
-                 <div className="flex justify-center">
+                 <div className="flex flex-col items-center gap-4">
                     <Avatar className="w-24 h-24 border-4 border-primary">
-                        <AvatarImage src={defaultUserProfileData.avatar} alt={name} />
-                        <AvatarFallback>{name.charAt(0)}</AvatarFallback>
+                        <AvatarImage src={avatar} alt={name} />
+                        <AvatarFallback>{name ? name.charAt(0) : 'U'}</AvatarFallback>
                     </Avatar>
+                    <input type="file" accept="image/*" ref={fileInputRef} onChange={handleAvatarUpload} className="hidden" />
+                    <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
+                        <Upload className="mr-2 h-4 w-4" /> Upload Photo
+                    </Button>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label htmlFor="name">Full Name</Label>
-                        <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g., Alex Doe" />
+                        <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g., Alex Doe" required />
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="student-id">Student ID</Label>
@@ -146,7 +162,7 @@ export default function WelcomePage() {
                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor={`course-name-${course.inputId}`}>Course Name</Label>
-                                    <Input id={`course-name-${course.inputId}`} value={course.name} onChange={e => handleCourseChange(course.inputId, 'name', e.target.value)} placeholder="e.g., Introduction to AI" />
+                                    <Input id={`course-name-${course.inputId}`} value={course.name} onChange={e => handleCourseChange(course.inputId, 'name', e.target.value)} placeholder="e.g., Introduction to AI" required />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor={`instructor-${course.inputId}`}>Instructor Name</Label>
@@ -162,10 +178,10 @@ export default function WelcomePage() {
                                             <SelectTrigger><SelectValue/></SelectTrigger>
                                             <SelectContent>{daysOfWeek.map(day => <SelectItem key={day} value={day}>{day}</SelectItem>)}</SelectContent>
                                         </Select>
-                                        <Input type="time" value={entry.startTime} onChange={e => handleScheduleChange(course.inputId, scheduleIndex, 'startTime', e.target.value)} />
+                                        <Input type="time" value={entry.startTime} onChange={e => handleScheduleChange(course.inputId, scheduleIndex, 'startTime', e.target.value)} required />
                                         <span>-</span>
-                                        <Input type="time" value={entry.endTime} onChange={e => handleScheduleChange(course.inputId, scheduleIndex, 'endTime', e.target.value)} />
-                                        <Button type="button" variant="ghost" size="icon" onClick={() => removeScheduleEntry(course.inputId, scheduleIndex)}>
+                                        <Input type="time" value={entry.endTime} onChange={e => handleScheduleChange(course.inputId, scheduleIndex, 'endTime', e.target.value)} required />
+                                        <Button type="button" variant="ghost" size="icon" onClick={() => removeScheduleEntry(course.inputId, scheduleIndex)} disabled={course.schedule.length <= 1}>
                                             <Trash2 className="w-4 h-4 text-destructive" />
                                         </Button>
                                     </div>
@@ -199,3 +215,5 @@ export default function WelcomePage() {
     </Card>
   );
 }
+
+    

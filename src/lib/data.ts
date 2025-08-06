@@ -1,34 +1,13 @@
 import type { Course, Task, ScheduleData, File, Message, UserProfile } from '@/lib/types';
 
 export const userProfileData: UserProfile = {
-  name: 'Alex Doe',
-  bio: 'Computer Science student at University of Innovation. Passionate about AI and building cool apps.',
-  id: '2024-01234',
+  name: '',
+  bio: '',
+  id: '',
   avatar: 'https://placehold.co/100x100.png',
 };
 
-export const coursesData: Course[] = [
-  { id: 'cs101', name: 'Introduction to Programming', instructor: 'Dr. Alan Turing', schedule: [
-    { day: 'Monday', startTime: '08:00', endTime: '09:30'},
-    { day: 'Wednesday', startTime: '08:00', endTime: '09:30'}
-  ], color: 'bg-blue-600' },
-  { id: 'ds202', name: 'Data Structures & Algorithms', instructor: 'Dr. Grace Hopper', schedule: [
-    { day: 'Monday', startTime: '10:00', endTime: '11:30'},
-    { day: 'Friday', startTime: '08:00', endTime: '09:30'}
-  ], color: 'bg-green-600' },
-  { id: 'ai301', name: 'Artificial Intelligence', instructor: 'Dr. Geoffrey Hinton', schedule: [
-    { day: 'Tuesday', startTime: '10:00', endTime: '11:30'},
-    { day: 'Thursday', startTime: '10:00', endTime: '11:30'}
-  ], color: 'bg-purple-600' },
-  { id: 'se404', name: 'Software Engineering', instructor: 'Dr. Linus Torvalds', schedule: [
-    { day: 'Tuesday', startTime: '13:00', endTime: '14:30'},
-    { day: 'Thursday', startTime: '13:00', endTime: '14:30'}
-  ], color: 'bg-red-600' },
-  { id: 'scied3a', name: 'SCIED 3A', instructor: 'Dr. Marie Curie', schedule: [
-    { day: 'Wednesday', startTime: '13:00', endTime: '14:30'},
-    { day: 'Friday', startTime: '13:00', endTime: '14:30'}
-  ], color: 'bg-yellow-500' },
-];
+export const coursesData: Course[] = [];
 
 export const tasksData: Task[] = [
   { id: 't1', courseId: 'cs101', title: 'Final Project Proposal', type: 'Assignment', assignedDate: '2024-05-20', deadline: '2024-06-10', priority: 'High', status: 'In Progress' },
@@ -81,3 +60,5 @@ export const messagesData: { [contact: string]: Message[] } = {
     { id: 'm5', sender: 'You', text: 'Yes, I am. Let\'s meet at the library at 2 PM.', timestamp: '5:45 PM', avatar: userProfileData.avatar },
   ],
 };
+
+    
