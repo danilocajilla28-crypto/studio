@@ -8,11 +8,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { initialMessagesData, userProfileData } from '@/lib/data';
+import { userProfileData } from '@/lib/data';
 import type { Message } from '@/lib/types';
-import { Send, Users, User } from 'lucide-react';
+import { Send, Users, User, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import Link from 'next/link';
 
 const contacts = [
     { id: 'group-cs101', name: 'CS101 Group', type: 'group', avatar: 'https://placehold.co/40x40/673ab7/ffffff.png?text=CS' },
@@ -23,7 +22,7 @@ const contacts = [
 
 export default function MessagesPage() {
     const [activeChatId, setActiveChatId] = useState<string>('dm-jane');
-    const [messages, setMessages] = useState<{ [contactId: string]: Message[] }>(initialMessagesData);
+    const [messages, setMessages] = useState<{ [contactId: string]: Message[] }>({});
     const [newMessage, setNewMessage] = useState('');
 
     const activeContact = contacts.find(c => c.id === activeChatId);
