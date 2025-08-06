@@ -68,9 +68,9 @@ export default function SignupPage() {
                 bio: '', // Bio can be added later in profile
             });
 
-            // For Google sign-in, the experience is smoother if we take them
-            // directly to the dashboard. They can add courses from there.
-            router.push('/dashboard');
+            // For Google sign-in, we also take them to the welcome page
+            // to set up their courses.
+            router.push('/welcome');
         }
         if (error) {
             // You can show a toast notification here
