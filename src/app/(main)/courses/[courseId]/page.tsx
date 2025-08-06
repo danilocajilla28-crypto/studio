@@ -6,22 +6,39 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { notFound } from 'next/navigation';
-import { Upload, Eye, Download, MoreHorizontal, FileText, Trash2 } from 'lucide-react';
+import { Upload, Eye, Download, MoreHorizontal, FileText, Trash2, Link as LinkIcon, Plus } from 'lucide-react';
 import { useUserData } from '@/hooks/use-user-data';
 import type { File as FileType } from '@/lib/types';
-import { useRef, useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { useRef, useState, useEffect } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import Image from 'next/image';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 
 export default function CourseDetailPage({ params }: { params: { courseId: string } }) {
-  const { courses, files, addFile, removeFile } = useUserData();
-  const course = courses.find(c => c.id === params.courseId);
+  const { courses, files, addFile, removeFile, isLoading } = useUserData();
+  const [course, setCourse] = useState(() => courses.find(c => c.id === params.courseId));
   const courseFiles = files[params.courseId] || [];
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [viewingFile, setViewingFile] = useState<FileType | null>(null);
+  const [linkName, setLinkName] = useState('');
+  const [linkUrl, setLinkUrl] = useState('');
+  const [isAddLinkOpen, setIsAddLinkOpen] = useState(false);
 
-  if (!course) {
+  useEffect(() => {
+    if (!isLoading) {
+      const foundCourse = courses.find(c => c.id === params.courseId);
+      if (!foundCourse) {
+        notFound();
+      } else {
+        setCourse(foundCourse);
+      }
+    }
+  }, [isLoading, courses, params.courseId]);
+  
+
+  if (isLoading || !course) {
     return (
        <div>
          <PageHeader title="Loading..." />
@@ -52,7 +69,28 @@ export default function CourseDetailPage({ params }: { params: { courseId: strin
     reader.readAsDataURL(file);
   };
 
+  const handleAddLink = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!linkName || !linkUrl) return;
+    
+    const linkData: FileType = {
+        id: `${params.courseId}-${Date.now()}`,
+        name: linkName,
+        type: 'Link',
+        url: linkUrl,
+        dateAdded: new Date().toLocaleDateString(),
+    };
+    addFile(params.courseId, linkData);
+    setLinkName('');
+    setLinkUrl('');
+    setIsAddLinkOpen(false);
+  }
+
   const openFile = (file: FileType) => {
+     if (file.type === 'Link') {
+        window.open(file.url, '_blank', 'noopener,noreferrer');
+        return;
+    }
     setViewingFile(file);
   }
 
@@ -65,10 +103,17 @@ export default function CourseDetailPage({ params }: { params: { courseId: strin
     document.body.removeChild(link);
   }
 
+  const getFileIcon = (type: string) => {
+    if (type === 'Link') {
+        return <LinkIcon className="w-5 h-5 text-muted-foreground" />;
+    }
+    return <FileText className="w-5 h-5 text-muted-foreground" />;
+  }
+
   return (
     <div>
       <PageHeader title={course.name} action={
-        <>
+        <div className="flex gap-2">
           <input 
             type="file" 
             ref={fileInputRef} 
@@ -78,7 +123,36 @@ export default function CourseDetailPage({ params }: { params: { courseId: strin
           <Button onClick={() => fileInputRef.current?.click()}>
             <Upload className="mr-2" />Upload File
           </Button>
-        </>
+           <Dialog open={isAddLinkOpen} onOpenChange={setIsAddLinkOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline"><Plus className="mr-2" />Add Link</Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px] bg-background/80 backdrop-blur-sm">
+                 <form onSubmit={handleAddLink}>
+                    <DialogHeader>
+                    <DialogTitle>Add a new link</DialogTitle>
+                    <DialogDescription>
+                        Save an external link to your repository.
+                    </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="link-name" className="text-right">Name</Label>
+                        <Input id="link-name" value={linkName} onChange={e => setLinkName(e.target.value)} placeholder="e.g., Course Syllabus" className="col-span-3" required />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="link-url" className="text-right">URL</Label>
+                        <Input id="link-url" type="url" value={linkUrl} onChange={e => setLinkUrl(e.target.value)} placeholder="https://example.com" className="col-span-3" required />
+                    </div>
+                    </div>
+                    <DialogFooter>
+                      <DialogClose asChild><Button variant="ghost">Cancel</Button></DialogClose>
+                      <Button type="submit">Save Link</Button>
+                    </DialogFooter>
+                 </form>
+              </DialogContent>
+          </Dialog>
+        </div>
       } />
       <Card className="bg-card/60 backdrop-blur-sm">
         <CardHeader>
@@ -99,14 +173,14 @@ export default function CourseDetailPage({ params }: { params: { courseId: strin
               {courseFiles.map(file => (
                 <TableRow key={file.id}>
                   <TableCell className="font-medium flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-muted-foreground" />
+                    {getFileIcon(file.type)}
                     {file.name}
                   </TableCell>
                   <TableCell>{file.type}</TableCell>
                   <TableCell>{file.dateAdded}</TableCell>
                   <TableCell className="text-right">
                     <Button variant="ghost" size="icon" onClick={() => openFile(file)}><Eye className="w-4 h-4" /></Button>
-                    <Button variant="ghost" size="icon" onClick={() => downloadFile(file)}><Download className="w-4 h-4" /></Button>
+                    {file.type !== 'Link' && <Button variant="ghost" size="icon" onClick={() => downloadFile(file)}><Download className="w-4 h-4" /></Button>}
                     <Button variant="ghost" size="icon" onClick={() => removeFile(params.courseId, file.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
                   </TableCell>
                 </TableRow>
@@ -114,7 +188,7 @@ export default function CourseDetailPage({ params }: { params: { courseId: strin
                {courseFiles.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center h-24 text-muted-foreground">
-                    No files uploaded yet.
+                    No files or links added yet.
                   </TableCell>
                 </TableRow>
               )}
