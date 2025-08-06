@@ -60,18 +60,17 @@ export default function SignupPage() {
         if (user) {
             // If signing up with Google, we might not have all profile info yet.
             // Still go to welcome page. We could pre-fill name/avatar from Google profile.
-             if (user.displayName) setName(user.displayName);
-             if (user.photoURL) setAvatar(user.photoURL);
+             const googleName = user.displayName || '';
+             const googleAvatar = user.photoURL || 'https://placehold.co/100x100.png';
 
-             // Since we can't guarantee all info is filled, we still go to welcome
-             // to complete the setup. In a real app, you might merge these steps.
              setUserProfile({
-                name: user.displayName || '',
-                avatar: user.photoURL || 'https://placehold.co/100x100.png',
-                id: '',
-                bio: '',
+                name: googleName,
+                avatar: googleAvatar,
+                id: '', // Student ID needs to be filled manually
+                bio: '', // Bio needs to be filled manually
             });
 
+            // Navigate to the welcome page to confirm details and add courses.
             router.push('/welcome');
         }
         if (error) {
