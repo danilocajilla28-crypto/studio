@@ -39,6 +39,8 @@ export default function TasksPage() {
   const [deadline, setDeadline] = useState('');
   const [priority, setPriority] = useState<Task['priority']>('Medium');
 
+  const sortedTasks = [...tasks].sort((a, b) => new Date(b.assignedDate).getTime() - new Date(a.assignedDate).getTime());
+
   const getPriorityBadge = (priority: string) => {
     switch (priority) {
       case 'High': return 'destructive';
@@ -172,7 +174,7 @@ export default function TasksPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {tasks.length > 0 ? tasks.map(task => (
+              {sortedTasks.length > 0 ? sortedTasks.map(task => (
                 <TableRow key={task.id}>
                   <TableCell className="font-medium">{task.title}</TableCell>
                   <TableCell>{courses.find(c => c.id === task.courseId)?.name}</TableCell>
