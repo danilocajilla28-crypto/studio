@@ -5,7 +5,6 @@ import { PageHeader } from '@/components/page-header';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ListTodo, Calendar, FileText, ArrowRight } from 'lucide-react';
-import { tasksData } from '@/lib/data';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -19,8 +18,8 @@ const timeToMinutes = (time: string) => {
 
 
 export default function DashboardPage() {
-  const { userProfile, courses, files } = useUserData();
-  const upcomingTasks = tasksData.filter(t => t.status !== 'Completed').slice(0, 3);
+  const { userProfile, courses, files, tasks } = useUserData();
+  const upcomingTasks = tasks.filter(t => t.status !== 'Completed').slice(0, 3);
   const recentFiles = Object.values(files).flat().slice(0, 3);
   
   // Create a simplified schedule for the dashboard preview
@@ -31,7 +30,7 @@ export default function DashboardPage() {
       day: entry.day,
       startTime: entry.startTime
     }))
-  ).filter(item => ['Monday', 'Tuesday', 'Wednesday'].includes(item.day))
+  ).filter(item => ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].includes(item.day))
    .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime))
    .slice(0, 2);
 
@@ -42,7 +41,7 @@ export default function DashboardPage() {
       <div className="space-y-6">
         <Card className="bg-card/60 backdrop-blur-sm">
           <CardHeader>
-            <CardTitle className="font-headline">Welcome back, {userProfile.name.split(' ')[0]}!</CardTitle>
+            <CardTitle className="font-headline">Welcome back, {userProfile.name ? userProfile.name.split(' ')[0] : 'Student'}!</CardTitle>
             <CardDescription>Here's a quick overview of your academic life.</CardDescription>
           </CardHeader>
         </Card>

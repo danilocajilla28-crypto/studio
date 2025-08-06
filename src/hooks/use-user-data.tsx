@@ -2,17 +2,21 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import type { UserProfile, Course, File as FileType } from '@/lib/types';
-import { userProfileData as defaultUserProfile, coursesData as defaultCourses, filesData as defaultFiles } from '@/lib/data';
+import type { UserProfile, Course, File as FileType, Task } from '@/lib/types';
+import { userProfileData as defaultUserProfile, coursesData as defaultCourses, filesData as defaultFiles, tasksData as defaultTasks } from '@/lib/data';
 
 interface UserDataContextType {
   userProfile: UserProfile;
   courses: Course[];
   files: { [courseId: string]: FileType[] };
+  tasks: Task[];
   setUserProfile: (profile: UserProfile) => void;
   setCourses: (courses: Course[]) => void;
   addFile: (courseId: string, file: FileType) => void;
   removeFile: (courseId: string, fileId: string) => void;
+  addTask: (task: Task) => void;
+  removeTask: (taskId: string) => void;
+  updateTaskStatus: (taskId: string, status: Task['status']) => void;
   isLoading: boolean;
 }
 
@@ -22,6 +26,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
   const [userProfile, setUserProfileState] = useState<UserProfile>(defaultUserProfile);
   const [courses, setCoursesState] = useState<Course[]>(defaultCourses);
   const [files, setFilesState] = useState<{ [courseId: string]: FileType[] }>(defaultFiles);
+  const [tasks, setTasksState] = useState<Task[]>(defaultTasks);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -29,6 +34,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
       const storedProfile = localStorage.getItem('userProfile');
       const storedCourses = localStorage.getItem('courses');
       const storedFiles = localStorage.getItem('files');
+      const storedTasks = localStorage.getItem('tasks');
 
       if (storedProfile) {
         setUserProfileState(JSON.parse(storedProfile));
@@ -39,11 +45,16 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
       if (storedFiles) {
         setFilesState(JSON.parse(storedFiles));
       }
+      if (storedTasks) {
+        setTasksState(JSON.parse(storedTasks));
+      }
     } catch (error) {
       console.error("Failed to parse user data from localStorage", error);
+      // Reset to defaults if parsing fails
       setUserProfileState(defaultUserProfile);
       setCoursesState(defaultCourses);
       setFilesState(defaultFiles);
+      setTasksState(defaultTasks);
     } finally {
       setIsLoading(false);
     }
@@ -72,7 +83,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
     if (!newFiles[courseId]) {
       newFiles[courseId] = [];
     }
-    newFiles[courseId].push(file);
+    newFiles[courseId].unshift(file);
     setFilesState(newFiles);
     try {
       localStorage.setItem('files', JSON.stringify(newFiles));
@@ -93,15 +104,50 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
       }
     }
   };
+  
+  const addTask = (task: Task) => {
+      const newTasks = [task, ...tasks];
+      setTasksState(newTasks);
+      try {
+          localStorage.setItem('tasks', JSON.stringify(newTasks));
+      } catch (error) {
+          console.error("Failed to save tasks to localStorage", error);
+      }
+  };
+
+  const removeTask = (taskId: string) => {
+      const newTasks = tasks.filter(t => t.id !== taskId);
+      setTasksState(newTasks);
+      try {
+          localStorage.setItem('tasks', JSON.stringify(newTasks));
+      } catch (error) {
+          console.error("Failed to save tasks to localStorage", error);
+      }
+  };
+
+  const updateTaskStatus = (taskId: string, status: Task['status']) => {
+      const newTasks = tasks.map(t => t.id === taskId ? { ...t, status } : t);
+      setTasksState(newTasks);
+      try {
+          localStorage.setItem('tasks', JSON.stringify(newTasks));
+      } catch (error) {
+          console.error("Failed to save tasks to localStorage", error);
+      }
+  }
+
 
   const value = {
     userProfile,
     courses,
     files,
+    tasks,
     setUserProfile,
     setCourses,
     addFile,
     removeFile,
+    addTask,
+    removeTask,
+    updateTaskStatus,
     isLoading,
   };
 
