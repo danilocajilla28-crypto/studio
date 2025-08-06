@@ -1,12 +1,13 @@
 'use client';
 
 import { PageHeader } from '@/components/page-header';
-import { Card, CardContent } from '@/components/ui/card';
-import { scheduleData, coursesData } from '@/lib/data';
+import { Card } from '@/components/ui/card';
+import { scheduleData } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import React from 'react';
+import { useUserData } from '@/hooks/use-user-data';
 
 const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 const timeSlots = [
@@ -28,6 +29,10 @@ const timeToMinutes = (time: string) => {
 };
 
 export default function SchedulePage() {
+  const { courses } = useUserData();
+
+  // In a real app, this schedule data would also come from the user input.
+  // For now, we continue using the mock scheduleData and map courses to it.
   const flattenedSchedule = Object.entries(scheduleData).flatMap(([timeRange, dailySchedule]) => {
     const [startTimeStr, endTimeStr] = timeRange.split(' - ');
     const startTime = timeToMinutes(startTimeStr);
@@ -41,7 +46,7 @@ export default function SchedulePage() {
       const dayIndex = days.indexOf(day);
       if (dayIndex === -1) return null;
       
-      const course = coursesData.find(c => c.id === event.courseId);
+      const course = courses.find(c => c.id === event.courseId);
 
       return {
         ...event,
@@ -85,10 +90,10 @@ export default function SchedulePage() {
           
            {/* Schedule Events */}
            {flattenedSchedule.map(event => (
-              event && (
+              event && event.course && (
                  <div
                   key={`${event.courseId}-${event.day}`}
-                  className={cn("p-2 rounded-lg flex flex-col justify-center items-center text-center text-white", event.course?.color)}
+                  className={cn("p-2 rounded-lg flex flex-col justify-center items-center text-center text-white", event.course.color)}
                   style={{
                     gridColumnStart: event.dayIndex + 2,
                     gridRowStart: event.startRow,
@@ -96,7 +101,7 @@ export default function SchedulePage() {
                   }}
                 >
                   <p className="font-bold">{event.name}</p>
-                  <p className="text-xs">{event.course?.name}</p>
+                  <p className="text-xs">{event.course.name}</p>
                   <p className="text-xs opacity-80 mt-1">{event.timeRange}</p>
                 </div>
               )

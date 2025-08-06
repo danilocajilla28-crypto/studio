@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { tasksData, coursesData } from '@/lib/data';
+import { tasksData } from '@/lib/data';
 import { Plus, MoreHorizontal } from 'lucide-react';
 import {
   Dialog,
@@ -18,8 +18,11 @@ import {
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useUserData } from '@/hooks/use-user-data';
 
 export default function TasksPage() {
+  const { courses } = useUserData();
+
   const getPriorityBadge = (priority: string) => {
     switch (priority) {
       case 'High': return 'destructive';
@@ -61,7 +64,7 @@ export default function TasksPage() {
                     <SelectValue placeholder="Select a course" />
                   </SelectTrigger>
                   <SelectContent>
-                    {coursesData.map(course => <SelectItem key={course.id} value={course.id}>{course.name}</SelectItem>)}
+                    {courses.map(course => <SelectItem key={course.id} value={course.id}>{course.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -109,7 +112,7 @@ export default function TasksPage() {
               {tasksData.map(task => (
                 <TableRow key={task.id}>
                   <TableCell className="font-medium">{task.title}</TableCell>
-                  <TableCell>{coursesData.find(c => c.id === task.courseId)?.name}</TableCell>
+                  <TableCell>{courses.find(c => c.id === task.courseId)?.name}</TableCell>
                   <TableCell>{task.type}</TableCell>
                   <TableCell>{task.deadline}</TableCell>
                   <TableCell><Badge variant={getPriorityBadge(task.priority)}>{task.priority}</Badge></TableCell>

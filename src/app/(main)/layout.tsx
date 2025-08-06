@@ -1,3 +1,4 @@
+'use client';
 import {
   SidebarProvider,
   Sidebar,
@@ -21,8 +22,8 @@ import {
   ListTodo,
   MessageSquare,
   ScanLine,
-  User,
 } from 'lucide-react';
+import { UserDataProvider, useUserData } from '@/hooks/use-user-data';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -34,7 +35,9 @@ const navItems = [
   { href: '/messages', icon: MessageSquare, label: 'Messages' },
 ];
 
-export default function MainLayout({ children }: { children: React.ReactNode }) {
+function MainLayoutContent({ children }: { children: React.ReactNode }) {
+  const { userProfile } = useUserData();
+
   return (
     <SidebarProvider>
       <Sidebar>
@@ -64,10 +67,10 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
            <SidebarMenuButton asChild tooltip="Profile">
               <Link href="/profile">
                   <Avatar className="w-7 h-7">
-                      <AvatarImage src="https://placehold.co/40x40.png" alt="User" />
-                      <AvatarFallback>U</AvatarFallback>
+                      <AvatarImage src={userProfile.avatar} alt={userProfile.name} />
+                      <AvatarFallback>{userProfile.name.charAt(0)}</AvatarFallback>
                   </Avatar>
-                  <span>Profile</span>
+                  <span>{userProfile.name}</span>
               </Link>
            </SidebarMenuButton>
         </SidebarFooter>
@@ -85,5 +88,13 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         </div>
       </SidebarInset>
     </SidebarProvider>
+  )
+}
+
+export default function MainLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <UserDataProvider>
+      <MainLayoutContent>{children}</MainLayoutContent>
+    </UserDataProvider>
   );
 }

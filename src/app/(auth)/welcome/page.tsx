@@ -7,42 +7,71 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { userProfileData } from '@/lib/data';
+import { userProfileData as defaultUserProfileData } from '@/lib/data';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Plus, Trash2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { useUserData } from '@/hooks/use-user-data';
+import type { Course } from '@/lib/types';
+
 
 type CourseInput = {
-    id: number;
+    id: string;
     name: string;
     instructor: string;
     schedule: string;
+    color: string;
 };
+
+const courseColors = ['bg-blue-600', 'bg-green-600', 'bg-purple-600', 'bg-red-600', 'bg-yellow-500', 'bg-pink-600', 'bg-indigo-600'];
 
 export default function WelcomePage() {
     const router = useRouter();
+    const { setUserProfile, setCourses: setAppCourses } = useUserData();
+    
+    const [name, setName] = useState(defaultUserProfileData.name);
+    const [studentId, setStudentId] = useState(defaultUserProfileData.id);
+    const [bio, setBio] = useState(defaultUserProfileData.bio);
+
     const [courses, setCourses] = useState<CourseInput[]>([
-        { id: 1, name: '', instructor: '', schedule: '' }
+        { id: `course-${Date.now()}`, name: '', instructor: '', schedule: '', color: courseColors[0] }
     ]);
 
-    const handleCourseChange = (id: number, field: keyof Omit<CourseInput, 'id'>, value: string) => {
+    const handleCourseChange = (id: string, field: keyof Omit<CourseInput, 'id' | 'color'>, value: string) => {
         setCourses(courses.map(course => 
             course.id === id ? { ...course, [field]: value } : course
         ));
     };
 
     const addCourse = () => {
-        setCourses([...courses, { id: Date.now(), name: '', instructor: '', schedule: '' }]);
+        setCourses([...courses, { id: `course-${Date.now()}`, name: '', instructor: '', schedule: '', color: courseColors[courses.length % courseColors.length] }]);
     };
 
-    const removeCourse = (id: number) => {
+    const removeCourse = (id: string) => {
         setCourses(courses.filter(course => course.id !== id));
     };
 
     const handleSave = (e: React.FormEvent) => {
         e.preventDefault();
-        // In a real app, you'd save this data.
-        // For now, we'll just navigate to the dashboard.
+        
+        setUserProfile({
+            name,
+            id: studentId,
+            bio,
+            avatar: defaultUserProfileData.avatar
+        });
+
+        const formattedCourses: Course[] = courses.map((c, i) => ({
+            id: c.name.toLowerCase().replace(/\s/g, '-') || `course-${i}`,
+            name: c.name,
+            color: c.color,
+            // instructor and schedule are not part of the Course type, but you might want to store them elsewhere
+        }));
+
+        setAppCourses(formattedCourses);
+        // You might want to save instructor/schedule info in a separate state or combine them.
+        // For now, we'll just navigate. A more complex app would save this to a backend/context.
+
         router.push('/dashboard');
     };
 
@@ -57,23 +86,23 @@ export default function WelcomePage() {
             <div className="space-y-6">
                  <div className="flex justify-center">
                     <Avatar className="w-24 h-24 border-4 border-primary">
-                        <AvatarImage src={userProfileData.avatar} alt={userProfileData.name} />
-                        <AvatarFallback>{userProfileData.name.charAt(0)}</AvatarFallback>
+                        <AvatarImage src={defaultUserProfileData.avatar} alt={name} />
+                        <AvatarFallback>{name.charAt(0)}</AvatarFallback>
                     </Avatar>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label htmlFor="name">Full Name</Label>
-                        <Input id="name" defaultValue={userProfileData.name} placeholder="e.g., Alex Doe" />
+                        <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g., Alex Doe" />
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="student-id">Student ID</Label>
-                        <Input id="student-id" defaultValue={userProfileData.id} placeholder="e.g., 2024-01234" />
+                        <Input id="student-id" value={studentId} onChange={(e) => setStudentId(e.target.value)} placeholder="e.g., 2024-01234" />
                     </div>
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="bio">Bio</Label>
-                    <Textarea id="bio" defaultValue={userProfileData.bio} rows={3} placeholder="Tell us a little about yourself..." />
+                    <Textarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} rows={3} placeholder="Tell us a little about yourself..." />
                 </div>
             </div>
 

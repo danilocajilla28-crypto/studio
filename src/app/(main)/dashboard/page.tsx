@@ -4,12 +4,14 @@ import { PageHeader } from '@/components/page-header';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ListTodo, Calendar, FileText, ArrowRight } from 'lucide-react';
-import { tasksData, coursesData, scheduleData, filesData } from '@/lib/data';
+import { tasksData, scheduleData, filesData } from '@/lib/data';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useUserData } from '@/hooks/use-user-data';
 
 export default function DashboardPage() {
+  const { userProfile, courses } = useUserData();
   const upcomingTasks = tasksData.filter(t => t.status !== 'Completed').slice(0, 3);
   const recentFiles = Object.values(filesData).flat().slice(0, 3);
   const scheduleTimeSlots = Object.keys(scheduleData).slice(0, 2);
@@ -20,7 +22,7 @@ export default function DashboardPage() {
       <div className="space-y-6">
         <Card className="bg-card/60 backdrop-blur-sm">
           <CardHeader>
-            <CardTitle className="font-headline">Welcome back, Alex!</CardTitle>
+            <CardTitle className="font-headline">Welcome back, {userProfile.name.split(' ')[0]}!</CardTitle>
             <CardDescription>Here's a quick overview of your academic life.</CardDescription>
           </CardHeader>
         </Card>
@@ -44,7 +46,7 @@ export default function DashboardPage() {
                   <li key={task.id} className="flex items-center justify-between p-3 rounded-lg bg-background/50">
                     <div>
                       <p className="font-semibold">{task.title}</p>
-                      <p className="text-sm text-muted-foreground">{coursesData.find(c => c.id === task.courseId)?.name}</p>
+                      <p className="text-sm text-muted-foreground">{courses.find(c => c.id === task.courseId)?.name}</p>
                     </div>
                     <div className="text-right">
                        <p className="text-sm">{task.deadline}</p>
@@ -52,6 +54,9 @@ export default function DashboardPage() {
                     </div>
                   </li>
                 ))}
+                 {upcomingTasks.length === 0 && (
+                  <p className="text-center text-muted-foreground py-4">No upcoming deadlines. Great job!</p>
+                )}
               </ul>
             </CardContent>
           </Card>
@@ -79,6 +84,9 @@ export default function DashboardPage() {
                      </div>
                    </li>
                 ))}
+                 {recentFiles.length === 0 && (
+                  <p className="text-center text-muted-foreground py-4">No recent files.</p>
+                )}
               </ul>
             </CardContent>
           </Card>
@@ -115,7 +123,7 @@ export default function DashboardPage() {
                                 {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map(day => (
                                     <TableCell key={day}>
                                         {scheduleData[time][day] ? (
-                                        <div className={cn("p-2 rounded-md text-center text-sm", coursesData.find(c => c.id === scheduleData[time][day]!.courseId)?.color)}>
+                                        <div className={cn("p-2 rounded-md text-center text-sm", courses.find(c => c.id === scheduleData[time][day]!.courseId)?.color)}>
                                             <p className="font-semibold text-foreground">{scheduleData[time][day]!.name}</p>
                                         </div>
                                         ) : null}
