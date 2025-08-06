@@ -33,7 +33,6 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
     try {
       const storedProfile = localStorage.getItem('userProfile');
       const storedCourses = localStorage.getItem('courses');
-      const storedFiles = localStorage.getItem('files');
       const storedTasks = localStorage.getItem('tasks');
 
       if (storedProfile) {
@@ -41,9 +40,6 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
       }
       if (storedCourses) {
         setCoursesState(JSON.parse(storedCourses));
-      }
-      if (storedFiles) {
-        setFilesState(JSON.parse(storedFiles));
       }
       if (storedTasks) {
         setTasksState(JSON.parse(storedTasks));
@@ -53,7 +49,6 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
       // Reset to defaults if parsing fails
       setUserProfileState(defaultUserProfile);
       setCoursesState(defaultCourses);
-      setFilesState(defaultFiles);
       setTasksState(defaultTasks);
     } finally {
       setIsLoading(false);
@@ -79,30 +74,24 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const addFile = (courseId: string, file: FileType) => {
-    const newFiles = { ...files };
-    if (!newFiles[courseId]) {
-      newFiles[courseId] = [];
-    }
-    newFiles[courseId].unshift(file);
-    setFilesState(newFiles);
-    try {
-      localStorage.setItem('files', JSON.stringify(newFiles));
-    } catch (error) {
-      console.error("Failed to save files to localStorage", error);
-    }
+    setFilesState(prevFiles => {
+        const newFiles = { ...prevFiles };
+        if (!newFiles[courseId]) {
+            newFiles[courseId] = [];
+        }
+        newFiles[courseId].unshift(file);
+        return newFiles;
+    });
   };
 
   const removeFile = (courseId: string, fileId: string) => {
-    const newFiles = { ...files };
-    if (newFiles[courseId]) {
-      newFiles[courseId] = newFiles[courseId].filter(f => f.id !== fileId);
-      setFilesState(newFiles);
-      try {
-        localStorage.setItem('files', JSON.stringify(newFiles));
-      } catch (error) {
-        console.error("Failed to save files to localStorage", error);
-      }
-    }
+    setFilesState(prevFiles => {
+        const newFiles = { ...prevFiles };
+        if (newFiles[courseId]) {
+            newFiles[courseId] = newFiles[courseId].filter(f => f.id !== fileId);
+        }
+        return newFiles;
+    });
   };
   
   const addTask = (task: Task) => {
