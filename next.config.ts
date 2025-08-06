@@ -10,6 +10,14 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      // Add your Supabase hostname here after you create a project
+      // Example:
+      // {
+      //   protocol: 'https',
+      //   hostname: 'xyz.supabase.co',
+      //   port: '',
+      //   pathname: '/**',
+      // },
     ],
   },
 };
