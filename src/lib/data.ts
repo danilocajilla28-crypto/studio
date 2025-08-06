@@ -8,11 +8,11 @@ export const userProfileData: UserProfile = {
 };
 
 export const coursesData: Course[] = [
-  { id: 'cs101', name: 'Introduction to Programming', color: 'bg-blue-500/20' },
-  { id: 'ds202', name: 'Data Structures & Algorithms', color: 'bg-green-500/20' },
-  { id: 'ai301', name: 'Artificial Intelligence', color: 'bg-purple-500/20' },
-  { id: 'se404', name: 'Software Engineering', color: 'bg-red-500/20' },
-  { id: 'scied3a', name: 'SCIED 3A', color: 'bg-yellow-500/20' },
+  { id: 'cs101', name: 'Introduction to Programming', color: 'bg-blue-600' },
+  { id: 'ds202', name: 'Data Structures & Algorithms', color: 'bg-green-600' },
+  { id: 'ai301', name: 'Artificial Intelligence', color: 'bg-purple-600' },
+  { id: 'se404', name: 'Software Engineering', color: 'bg-red-600' },
+  { id: 'scied3a', name: 'SCIED 3A', color: 'bg-yellow-500' },
 ];
 
 export const tasksData: Task[] = [
