@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,17 +23,38 @@ const timeSlots = Array.from({ length: 15 }, (_, i) => `${Math.floor(i / 2) + 7}
 
 export default function WelcomePage() {
     const router = useRouter();
-    const { setUserProfile, setCourses: setAppCourses } = useUserData();
+    const { userProfile, courses: appCourses, setUserProfile, setCourses: setAppCourses, isLoading } = useUserData();
     
     const [name, setName] = useState('');
     const [studentId, setStudentId] = useState('');
     const [bio, setBio] = useState('');
     const [avatar, setAvatar] = useState('https://placehold.co/100x100.png');
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [showProfileSetup, setShowProfileSetup] = useState(true);
 
     const [courses, setCourses] = useState<CourseInput[]>([
         { inputId: `course-${Date.now()}`, name: '', instructor: '', schedule: [{ day: 'Monday', startTime: '09:00', endTime: '10:00'}], color: courseColors[0] }
     ]);
+    
+    useEffect(() => {
+        if (!isLoading) {
+            if (userProfile.name) {
+                setName(userProfile.name);
+                setStudentId(userProfile.id);
+                setBio(userProfile.bio);
+                setAvatar(userProfile.avatar);
+                setShowProfileSetup(false);
+            }
+
+            if (appCourses.length > 0) {
+                setCourses(appCourses.map((c, i) => ({
+                    ...c,
+                    inputId: c.id || `course-${Date.now()}-${i}`,
+                })));
+            }
+        }
+    }, [isLoading, userProfile, appCourses]);
+
 
     const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -122,34 +143,36 @@ export default function WelcomePage() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSave} className="space-y-8">
-            <div className="space-y-6">
-                 <div className="flex flex-col items-center gap-4">
-                    <Avatar className="w-24 h-24 border-4 border-primary">
-                        <AvatarImage src={avatar} alt={name} />
-                        <AvatarFallback>{name ? name.charAt(0) : 'U'}</AvatarFallback>
-                    </Avatar>
-                    <input type="file" accept="image/*" ref={fileInputRef} onChange={handleAvatarUpload} className="hidden" />
-                    <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
-                        <Upload className="mr-2 h-4 w-4" /> Upload Photo
-                    </Button>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {showProfileSetup && (
+                <div className="space-y-6">
+                     <div className="flex flex-col items-center gap-4">
+                        <Avatar className="w-24 h-24 border-4 border-primary">
+                            <AvatarImage src={avatar} alt={name} />
+                            <AvatarFallback>{name ? name.charAt(0) : 'U'}</AvatarFallback>
+                        </Avatar>
+                        <input type="file" accept="image/*" ref={fileInputRef} onChange={handleAvatarUpload} className="hidden" />
+                        <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
+                            <Upload className="mr-2 h-4 w-4" /> Upload Photo
+                        </Button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="name">Full Name</Label>
+                            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g., Alex Doe" required />
+                        </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="student-id">Student ID</Label>
+                            <Input id="student-id" value={studentId} onChange={(e) => setStudentId(e.target.value)} placeholder="e.g., 2024-01234" />
+                        </div>
+                    </div>
                     <div className="space-y-2">
-                        <Label htmlFor="name">Full Name</Label>
-                        <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g., Alex Doe" required />
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="student-id">Student ID</Label>
-                        <Input id="student-id" value={studentId} onChange={(e) => setStudentId(e.target.value)} placeholder="e.g., 2024-01234" />
+                        <Label htmlFor="bio">Bio</Label>
+                        <Textarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} rows={3} placeholder="Tell us a little about yourself..." />
                     </div>
                 </div>
-                <div className="space-y-2">
-                    <Label htmlFor="bio">Bio</Label>
-                    <Textarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} rows={3} placeholder="Tell us a little about yourself..." />
-                </div>
-            </div>
+            )}
 
-            <Separator />
+            {showProfileSetup && <Separator />}
 
             <div className="space-y-6">
                 <div>
@@ -206,7 +229,7 @@ export default function WelcomePage() {
             </div>
             
              <Button type="submit" size="lg" className="w-full">
-                Save and Continue to Dashboard
+                {showProfileSetup ? 'Save and Continue to Dashboard' : 'Save Changes'}
               </Button>
         </form>
       </CardContent>
@@ -215,5 +238,7 @@ export default function WelcomePage() {
     </Card>
   );
 }
+
+    
 
     

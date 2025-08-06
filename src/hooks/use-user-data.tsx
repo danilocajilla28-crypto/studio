@@ -69,7 +69,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <UserDataContext.Provider value={value}>
-      {!isLoading && children}
+      {children}
     </UserDataContext.Provider>
   );
 };
@@ -81,3 +81,5 @@ export const useUserData = (): UserDataContextType => {
   }
   return context;
 };
+
+    
