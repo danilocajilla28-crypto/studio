@@ -1,9 +1,9 @@
 import type { Course, Task, ScheduleData, File, Message, UserProfile } from '@/lib/types';
 
 export const userProfileData: UserProfile = {
-  name: '',
-  bio: '',
-  id: '',
+  name: 'Alex Doe',
+  bio: 'Computer Science student at University of Example.',
+  id: '2024-01234',
   avatar: 'https://placehold.co/100x100.png',
 };
 
@@ -23,6 +23,6 @@ export const scheduleData: ScheduleData = {
 
 export const filesData: { [courseId: string]: File[] } = {};
 
-export const messagesData: { [contact: string]: Message[] } = {};
+export const initialMessagesData: { [contact: string]: Message[] } = {};
 
     

@@ -1,23 +1,53 @@
+
+'use client';
+
+import { useState } from 'react';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { messagesData, userProfileData } from '@/lib/data';
+import { initialMessagesData, userProfileData } from '@/lib/data';
+import type { Message } from '@/lib/types';
 import { Send, Users, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
 const contacts = [
     { id: 'group-cs101', name: 'CS101 Group', type: 'group', avatar: 'https://placehold.co/40x40/673ab7/ffffff.png?text=CS' },
     { id: 'group-ai301', name: 'AI301 Group', type: 'group', avatar: 'https://placehold.co/40x40/3f51b5/ffffff.png?text=AI' },
     { id: 'dm-jane', name: 'Jane Smith', type: 'dm', avatar: 'https://placehold.co/40x40.png' },
+    { id: 'dm-alex', name: 'Alex Ray', type: 'dm', avatar: 'https://placehold.co/40x40.png' },
 ]
 
 export default function MessagesPage() {
-    const activeChat = 'dm-jane';
-    const activeContact = contacts.find(c => c.id === activeChat);
-    const chatMessages = messagesData[activeChat] || [];
+    const [activeChatId, setActiveChatId] = useState<string>('dm-jane');
+    const [messages, setMessages] = useState<{ [contactId: string]: Message[] }>(initialMessagesData);
+    const [newMessage, setNewMessage] = useState('');
+
+    const activeContact = contacts.find(c => c.id === activeChatId);
+    const chatMessages = messages[activeChatId] || [];
+
+    const handleSendMessage = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newMessage.trim()) return;
+
+        const msg: Message = {
+            id: `msg-${Date.now()}`,
+            sender: 'You',
+            text: newMessage,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            avatar: userProfileData.avatar,
+        };
+
+        setMessages(prev => ({
+            ...prev,
+            [activeChatId]: [...(prev[activeChatId] || []), msg],
+        }));
+        setNewMessage('');
+    };
+
   return (
     <div className="h-[calc(100vh-10rem)] flex flex-col">
       <PageHeader title="Messaging" />
@@ -28,14 +58,20 @@ export default function MessagesPage() {
             </div>
             <ScrollArea className="flex-1">
                 {contacts.map(contact => (
-                    <div key={contact.id} className={cn("flex items-center gap-3 p-4 cursor-pointer hover:bg-muted/50", activeChat === contact.id && "bg-muted")}>
+                    <div 
+                        key={contact.id} 
+                        className={cn("flex items-center gap-3 p-4 cursor-pointer hover:bg-muted/50", activeChatId === contact.id && "bg-muted")}
+                        onClick={() => setActiveChatId(contact.id)}
+                    >
                         <Avatar>
                             <AvatarImage src={contact.avatar} />
                             <AvatarFallback>{contact.name.substring(0,2)}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
                             <p className="font-semibold">{contact.name}</p>
-                            <p className="text-sm text-muted-foreground truncate">{messagesData[contact.id]?.[messagesData[contact.id].length - 1].text}</p>
+                            <p className="text-sm text-muted-foreground truncate">
+                                {messages[contact.id]?.[messages[contact.id].length - 1]?.text || 'No messages yet'}
+                            </p>
                         </div>
                         {contact.type === 'group' ? <Users className="w-4 h-4 text-muted-foreground" /> : <User className="w-4 h-4 text-muted-foreground" />}
                     </div>
@@ -43,33 +79,53 @@ export default function MessagesPage() {
             </ScrollArea>
         </div>
         <div className="md:col-span-2 lg:col-span-3 flex flex-col h-full">
-            <div className="p-4 border-b flex items-center gap-3">
-                <Avatar>
-                    <AvatarImage src={activeContact?.avatar} />
-                    <AvatarFallback>{activeContact?.name.substring(0,2)}</AvatarFallback>
-                </Avatar>
-                <h2 className="text-lg font-semibold">{activeContact?.name}</h2>
+            <div className="p-4 border-b flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <Avatar>
+                        <AvatarImage src={activeContact?.avatar} />
+                        <AvatarFallback>{activeContact?.name.substring(0,2)}</AvatarFallback>
+                    </Avatar>
+                    <h2 className="text-lg font-semibold">{activeContact?.name}</h2>
+                </div>
+                 <Button variant="outline" asChild>
+                    <a href="https://www.messenger.com" target="_blank" rel="noopener noreferrer">
+                        Open in Messenger
+                    </a>
+                </Button>
             </div>
             <ScrollArea className="flex-1 p-6 bg-background/40">
-                <div className="space-y-6">
-                    {chatMessages.map(msg => (
-                         <div key={msg.id} className={cn("flex items-end gap-3", msg.sender === 'You' ? 'justify-end' : 'justify-start')}>
-                             {msg.sender !== 'You' && <Avatar className="w-8 h-8"><AvatarImage src={msg.avatar} /></Avatar>}
-                             <div className={cn("max-w-xs lg:max-w-md p-3 rounded-lg", msg.sender === 'You' ? 'bg-primary text-primary-foreground' : 'bg-muted')}>
-                                 <p className="text-sm">{msg.text}</p>
-                                 <p className="text-xs text-right mt-1 opacity-70">{msg.timestamp}</p>
-                             </div>
-                             {msg.sender === 'You' && <Avatar className="w-8 h-8"><AvatarImage src={msg.avatar} /></Avatar>}
-                         </div>
-                    ))}
-                </div>
+                 {chatMessages.length > 0 ? (
+                    <div className="space-y-6">
+                        {chatMessages.map(msg => (
+                            <div key={msg.id} className={cn("flex items-end gap-3", msg.sender === 'You' ? 'justify-end' : 'justify-start')}>
+                                {msg.sender !== 'You' && <Avatar className="w-8 h-8"><AvatarImage src={msg.avatar} /></Avatar>}
+                                <div className={cn("max-w-xs lg:max-w-md p-3 rounded-lg", msg.sender === 'You' ? 'bg-primary text-primary-foreground' : 'bg-muted')}>
+                                    <p className="text-sm">{msg.text}</p>
+                                    <p className="text-xs text-right mt-1 opacity-70">{msg.timestamp}</p>
+                                </div>
+                                {msg.sender === 'You' && <Avatar className="w-8 h-8"><AvatarImage src={userProfileData.avatar} /></Avatar>}
+                            </div>
+                        ))}
+                    </div>
+                 ) : (
+                    <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+                        <MessageSquare className="w-16 h-16 mb-4" />
+                        <h3 className="text-lg font-semibold">No messages yet</h3>
+                        <p>Send your first message to {activeContact?.name}.</p>
+                    </div>
+                 )}
             </ScrollArea>
-            <div className="p-4 border-t mt-auto">
+            <form onSubmit={handleSendMessage} className="p-4 border-t mt-auto">
                 <div className="flex items-center gap-2">
-                    <Input placeholder="Type a message..." className="flex-1" />
-                    <Button><Send className="w-4 h-4" /></Button>
+                    <Input 
+                        placeholder="Type a message..." 
+                        className="flex-1"
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                    />
+                    <Button type="submit"><Send className="w-4 h-4" /></Button>
                 </div>
-            </div>
+            </form>
         </div>
       </Card>
     </div>

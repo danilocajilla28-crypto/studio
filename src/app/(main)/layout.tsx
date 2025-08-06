@@ -68,7 +68,7 @@ function MainLayoutContent({ children }: { children: React.ReactNode }) {
               <Link href="/profile">
                   <Avatar className="w-7 h-7">
                       <AvatarImage src={userProfile.avatar} alt={userProfile.name} />
-                      <AvatarFallback>{userProfile.name.charAt(0)}</AvatarFallback>
+                      <AvatarFallback>{userProfile.name ? userProfile.name.charAt(0) : 'U'}</AvatarFallback>
                   </Avatar>
                   <span>{userProfile.name}</span>
               </Link>
