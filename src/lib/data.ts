@@ -1,10 +1,10 @@
 import type { Course, Task, ScheduleData, File, Message, UserProfile } from '@/lib/types';
 
 export const userProfileData: UserProfile = {
-  name: 'Alex Doe',
-  bio: 'Computer Science student at University of Example.',
-  id: '2024-01234',
-  avatar: 'https://placehold.co/100x100.png',
+  name: '',
+  bio: '',
+  id: '',
+  avatar: '',
 };
 
 export const coursesData: Course[] = [];
@@ -13,16 +13,8 @@ export const tasksData: Task[] = [];
 
 // This mock data is less relevant now as schedule is tied to courses.
 // Keeping it for potential use in dashboard preview, but will need adjustment.
-export const scheduleData: ScheduleData = {
-  '8:00 AM - 9:30 AM': { Monday: null, Tuesday: null, Wednesday: null, Thursday: null, Friday: null },
-  '10:00 AM - 11:30 AM': { Monday: null, Tuesday: null, Wednesday: null, Thursday: null, Friday: null },
-  '1:00 PM - 2:30 PM': { Monday: null, Tuesday: null, Wednesday: null, Thursday: null, Friday: null },
-  '3:00 PM - 4:30 PM': { Monday: null, Tuesday: null, Wednesday: null, Thursday: null, Friday: null },
-};
-
+export const scheduleData: ScheduleData = {};
 
 export const filesData: { [courseId: string]: File[] } = {};
 
 export const initialMessagesData: { [contact: string]: Message[] } = {};
-
-    
