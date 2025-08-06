@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { GoogleIcon } from '@/components/ui/google-icon';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -47,6 +48,10 @@ export default function LoginPage() {
             <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
           </div>
         </div>
+         <Button variant="outline" className="w-full">
+            <GoogleIcon className="mr-2 h-4 w-4" />
+            Continue with Google
+        </Button>
         <p className="text-sm text-center text-muted-foreground">
           Don&apos;t have an account?{' '}
           <Link href="/signup" className="font-semibold text-primary hover:underline">
