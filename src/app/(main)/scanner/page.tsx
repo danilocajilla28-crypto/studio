@@ -4,10 +4,18 @@ import { useState, useRef, useEffect } from 'react';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Camera, FileText, Video, VideoOff, RefreshCw, Upload, Download } from 'lucide-react';
+import { Camera, FileText, Video, VideoOff, RefreshCw, Upload, Download, Save } from 'lucide-react';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { cn } from '@/lib/utils';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useUserData } from '@/hooks/use-user-data';
+import type { File as FileType } from '@/lib/types';
+
 
 export default function ScannerPage() {
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
@@ -16,6 +24,14 @@ export default function ScannerPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { toast } = useToast();
+  const { courses, addFile, files } = useUserData();
+
+  const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
+  const [fileName, setFileName] = useState('');
+  const [selectedCourseId, setSelectedCourseId] = useState('');
+  
+  const recentFiles = Object.values(files).flat().filter(f => f.type.startsWith('image/')).slice(0, 3);
+
 
   useEffect(() => {
     return () => {
@@ -84,6 +100,7 @@ export default function ScannerPage() {
       context?.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
       const dataUrl = canvas.toDataURL('image/png');
       setCapturedImage(dataUrl);
+      setFileName(`scan-${new Date().toISOString().split('T')[0]}.png`);
        const stream = videoRef.current?.srcObject as MediaStream;
         stream?.getTracks().forEach(track => track.stop());
       setIsCameraOn(false);
@@ -92,8 +109,33 @@ export default function ScannerPage() {
 
   const retakeImage = () => {
     setCapturedImage(null);
+    setFileName('');
+    setSelectedCourseId('');
     getCameraPermission();
   };
+
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!capturedImage || !fileName || !selectedCourseId) {
+        toast({ variant: 'destructive', title: 'Error', description: 'Please provide a filename and select a course.' });
+        return;
+    }
+    const newFile: FileType = {
+        id: `${selectedCourseId}-${Date.now()}`,
+        name: fileName,
+        type: 'image/png', // assuming png from canvas
+        dateAdded: new Date().toLocaleDateString(),
+        url: capturedImage,
+    };
+    addFile(selectedCourseId, newFile);
+    toast({ title: 'Success', description: 'File saved to your course repository.' });
+    
+    // Reset state
+    setCapturedImage(null);
+    setFileName('');
+    setSelectedCourseId('');
+    setIsSaveDialogOpen(false);
+  }
 
   return (
     <div>
@@ -139,10 +181,45 @@ export default function ScannerPage() {
                         <RefreshCw className="mr-2" />
                         Retake
                     </Button>
-                     <Button size="lg" onClick={() => { /* Add save logic */ }}>
-                        <Download className="mr-2" />
-                        Save
-                    </Button>
+                    <Dialog open={isSaveDialogOpen} onOpenChange={setIsSaveDialogOpen}>
+                      <DialogTrigger asChild>
+                         <Button size="lg">
+                            <Save className="mr-2" />
+                            Save
+                        </Button>
+                      </DialogTrigger>
+                       <DialogContent className="sm:max-w-[425px] bg-background/80 backdrop-blur-sm">
+                         <form onSubmit={handleSave}>
+                            <DialogHeader>
+                            <DialogTitle>Save Scanned Document</DialogTitle>
+                            <DialogDescription>
+                                Name your file and select the course to save it to.
+                            </DialogDescription>
+                            </DialogHeader>
+                            <div className="grid gap-4 py-4">
+                               <div className="space-y-2">
+                                    <Label htmlFor="file-name">File Name</Label>
+                                    <Input id="file-name" value={fileName} onChange={e => setFileName(e.target.value)} required />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="course">Course</Label>
+                                    <Select onValueChange={setSelectedCourseId} value={selectedCourseId} required>
+                                        <SelectTrigger id="course">
+                                            <SelectValue placeholder="Select a course" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {courses.map(course => <SelectItem key={course.id} value={course.id}>{course.name}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                            <DialogFooter>
+                              <DialogClose asChild><Button type="button" variant="ghost">Cancel</Button></DialogClose>
+                              <Button type="submit">Save Document</Button>
+                            </DialogFooter>
+                         </form>
+                      </DialogContent>
+                    </Dialog>
                 </>
             )}
           </div>
@@ -155,27 +232,19 @@ export default function ScannerPage() {
           </CardHeader>
           <CardContent>
             <ul className="space-y-4">
-              <li className="flex items-center gap-4 p-3 rounded-lg bg-background/50">
-                <Image src="https://placehold.co/80x100.png" alt="scanned doc" width={60} height={75} className="rounded-md border" data-ai-hint="document page" />
-                <div>
-                  <p className="font-semibold">Lecture Notes - Week 5.pdf</p>
-                  <p className="text-sm text-muted-foreground">Scanned on: 2024-06-03</p>
-                </div>
-              </li>
-              <li className="flex items-center gap-4 p-3 rounded-lg bg-background/50">
-                <Image src="https://placehold.co/80x100.png" alt="scanned doc" width={60} height={75} className="rounded-md border" data-ai-hint="receipt invoice" />
-                <div>
-                  <p className="font-semibold">Lab Equipment Receipt.pdf</p>
-                  <p className="text-sm text-muted-foreground">Scanned on: 2024-06-01</p>
-                </div>
-              </li>
-              <li className="flex items-center gap-4 p-3 rounded-lg bg-background/50">
-                <Image src="https://placehold.co/80x100.png" alt="scanned doc" width={60} height={75} className="rounded-md border" data-ai-hint="textbook chapter" />
-                <div>
-                  <p className="font-semibold">Chapter 2 Reading.pdf</p>
-                  <p className="text-sm text-muted-foreground">Scanned on: 2024-05-29</p>
-                </div>
-              </li>
+              {recentFiles.length > 0 ? recentFiles.map(file => (
+                 <li key={file.id} className="flex items-center gap-4 p-3 rounded-lg bg-background/50">
+                    <Image src={file.url} alt={file.name} width={60} height={75} className="rounded-md border object-cover" />
+                    <div>
+                    <p className="font-semibold">{file.name}</p>
+                    <p className="text-sm text-muted-foreground">Added on: {file.dateAdded}</p>
+                    </div>
+                </li>
+              )) : (
+                <li className="text-center text-muted-foreground py-4">
+                    No recently scanned documents.
+                </li>
+              )}
             </ul>
           </CardContent>
         </Card>
