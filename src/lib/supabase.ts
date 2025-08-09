@@ -23,19 +23,18 @@ const mockSupabase = {
     }
 } as any;
 
-
-let supabaseInstance: any;
-
-if (supabaseUrl && supabaseAnonKey) {
-    try {
-        supabaseInstance = createClient(supabaseUrl, supabaseAnonKey);
-    } catch (error) {
-        console.error("Failed to create Supabase client:", error);
-        supabaseInstance = mockSupabase;
+const createSupabaseClient = () => {
+    if (supabaseUrl && supabaseAnonKey) {
+        try {
+            return createClient(supabaseUrl, supabaseAnonKey);
+        } catch (error) {
+            console.error("Failed to create Supabase client:", error);
+            return mockSupabase;
+        }
+    } else {
+        console.warn('Supabase credentials are not configured. Using mock client.');
+        return mockSupabase;
     }
-} else {
-    console.warn('Supabase credentials are not configured. Using mock client.');
-    supabaseInstance = mockSupabase;
-}
+};
 
-export const supabase = supabaseInstance;
+export const supabase = createSupabaseClient();
