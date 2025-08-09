@@ -15,7 +15,11 @@ import Image from 'next/image';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 
-export default function CourseDetailPage({ params }: { params: { courseId: string } }) {
+interface CourseDetailPageProps {
+  params: { courseId: string };
+}
+
+export default function CourseDetailPage({ params }: CourseDetailPageProps) {
   const { courses, files, addFile, removeFile, isLoading } = useUserData();
   const [course, setCourse] = useState(() => courses.find(c => c.id === params.courseId));
   const courseFiles = files[params.courseId] || [];
@@ -221,7 +225,7 @@ export default function CourseDetailPage({ params }: { params: { courseId: strin
                 <div className="flex flex-col items-center justify-center h-full text-center p-8">
                   <FileText className="w-24 h-24 text-muted-foreground mb-4" />
                   <h3 className="text-xl font-semibold">Preview not available</h3>
-                  <p className="text-muted-foreground">This file type cannot be previewed directly in the browser.</p>
+                  <p className="text-muted-foreground">This file type cannot be-previewed directly in the browser.</p>
                   <Button onClick={() => downloadFile(viewingFile)} className="mt-6">
                     <Download className="mr-2" /> Download File
                   </Button>
