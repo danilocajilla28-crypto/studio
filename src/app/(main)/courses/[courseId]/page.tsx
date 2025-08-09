@@ -15,9 +15,9 @@ import Image from 'next/image';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 
-interface CourseDetailPageProps {
+type CourseDetailPageProps = {
   params: { courseId: string };
-}
+};
 
 export default function CourseDetailPage({ params }: CourseDetailPageProps) {
   const { courses, files, addFile, removeFile, isLoading } = useUserData();
