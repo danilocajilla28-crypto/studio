@@ -226,6 +226,7 @@ export default function CourseDetailPage({ params }: CourseDetailPageProps) {
                   <FileText className="w-24 h-24 text-muted-foreground mb-4" />
                   <h3 className="text-xl font-semibold">Preview not available</h3>
                   <p className="text-muted-foreground">This file type cannot be-previewed directly in the browser.</p>
+
                   <Button onClick={() => downloadFile(viewingFile)} className="mt-6">
                     <Download className="mr-2" /> Download File
                   </Button>
