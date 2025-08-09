@@ -15,11 +15,11 @@ import Image from 'next/image';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 
-interface CourseDetailPageProps {
+interface PageProps {
   params: { courseId: string };
 }
 
-export default function CourseDetailPage({ params }: CourseDetailPageProps) {
+export default function CourseDetailPage({ params }: PageProps) {
   const { courses, files, addFile, removeFile, isLoading } = useUserData();
   const [course, setCourse] = useState(() => courses.find(c => c.id === params.courseId));
   const courseFiles = files[params.courseId] || [];
