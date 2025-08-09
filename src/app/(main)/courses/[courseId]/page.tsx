@@ -5,7 +5,7 @@ import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { notFound } from 'next/navigation';
+import { notFound, type ReadonlyURLSearchParams } from 'next/navigation';
 import { Upload, Eye, Download, MoreHorizontal, FileText, Trash2, Link as LinkIcon, Plus } from 'lucide-react';
 import { useUserData } from '@/hooks/use-user-data';
 import type { File as FileType } from '@/lib/types';
@@ -15,9 +15,10 @@ import Image from 'next/image';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 
-type CourseDetailPageProps = {
+interface CourseDetailPageProps {
   params: { courseId: string };
-};
+  searchParams: ReadonlyURLSearchParams;
+}
 
 export default function CourseDetailPage({ params }: CourseDetailPageProps) {
   const { courses, files, addFile, removeFile, isLoading } = useUserData();
